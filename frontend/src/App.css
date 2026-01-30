@@ -1,34 +1,160 @@
-.App-logo {
-    height: 40vmin;
-    pointer-events: none;
-}
+/* Global App Styles - Botanical Serendipity */
 
-@media (prefers-reduced-motion: no-preference) {
-    .App-logo {
-        animation: App-logo-spin infinite 20s linear;
-    }
-}
-
-.App-header {
-    background-color: #0f0f10;
+.app-container {
     min-height: 100vh;
+    background-color: hsl(60 7% 97%);
+    position: relative;
+}
+
+/* Mobile-first container */
+.mobile-container {
+    max-width: 28rem;
+    margin: 0 auto;
+    min-height: 100vh;
+    background-color: hsl(60 7% 97%);
+    position: relative;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
+}
+
+/* Profile card styles */
+.profile-card {
+    background: white;
+    padding: 1rem;
+    padding-bottom: 3rem;
+    box-shadow: 0 10px 40px -5px rgba(0, 0, 0, 0.1);
+    border: 1px solid hsl(60 4% 89% / 0.5);
+    position: relative;
+}
+
+.profile-card::after {
+    content: '';
+    position: absolute;
+    bottom: 0.75rem;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60%;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, hsl(139 10% 53% / 0.3), transparent);
+}
+
+/* Swipe buttons */
+.swipe-btn {
+    width: 4rem;
+    height: 4rem;
+    border-radius: 50%;
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
-    font-size: calc(10px + 2vmin);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.swipe-btn:hover {
+    transform: scale(1.1);
+}
+
+.swipe-btn:active {
+    transform: scale(0.95);
+}
+
+.swipe-btn-pass {
+    background: white;
+    border: 2px solid hsl(60 4% 89%);
+    color: hsl(215 16% 47%);
+}
+
+.swipe-btn-like {
+    background: hsl(0 30% 74%);
     color: white;
+    box-shadow: 0 4px 14px -2px hsl(0 30% 74% / 0.4);
 }
 
-.App-link {
-    color: #61dafb;
+/* Chat bubble styles */
+.chat-bubble {
+    max-width: 80%;
+    padding: 0.75rem 1rem;
+    border-radius: 1rem;
+    position: relative;
 }
 
-@keyframes App-logo-spin {
-    from {
-        transform: rotate(0deg);
-    }
-    to {
-        transform: rotate(360deg);
-    }
+.chat-bubble-sent {
+    background: hsl(139 10% 53%);
+    color: white;
+    border-bottom-right-radius: 0.25rem;
+    margin-left: auto;
+}
+
+.chat-bubble-received {
+    background: white;
+    color: hsl(210 29% 24%);
+    border: 1px solid hsl(60 4% 89%);
+    border-bottom-left-radius: 0.25rem;
+}
+
+/* Interest tags */
+.interest-tag {
+    display: inline-flex;
+    padding: 0.375rem 0.75rem;
+    background: hsl(37 42% 80% / 0.3);
+    color: hsl(210 29% 24%);
+    border-radius: 9999px;
+    font-size: 0.875rem;
+    border: 1px solid hsl(37 42% 80% / 0.5);
+}
+
+/* Hero section */
+.hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, 
+        hsl(60 7% 97% / 0.7) 0%, 
+        hsl(60 7% 97% / 0.9) 50%,
+        hsl(60 7% 97%) 100%
+    );
+}
+
+/* Loading skeleton pulse */
+@keyframes pulse-soft {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 0.7; }
+}
+
+.skeleton-pulse {
+    animation: pulse-soft 2s ease-in-out infinite;
+}
+
+/* Floating label animation */
+.floating-label {
+    transition: transform 0.2s ease, font-size 0.2s ease, color 0.2s ease;
+}
+
+.floating-label.active {
+    transform: translateY(-1.5rem);
+    font-size: 0.75rem;
+    color: hsl(139 10% 53%);
+}
+
+/* Match celebration */
+.celebration-bg {
+    background: radial-gradient(circle at center, 
+        hsl(0 30% 74% / 0.1) 0%, 
+        transparent 70%
+    );
+}
+
+/* Navigation active state */
+.nav-item-active {
+    color: hsl(139 10% 53%);
+    position: relative;
+}
+
+.nav-item-active::after {
+    content: '';
+    position: absolute;
+    bottom: -0.25rem;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0.25rem;
+    height: 0.25rem;
+    background: hsl(139 10% 53%);
+    border-radius: 50%;
 }

@@ -1,0 +1,283 @@
+import { useState, useEffect, useRef } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { ArrowLeft, Send, User, Sparkles, Wand2 } from 'lucide-react';
+import { Button } from '../components/ui/button';
+import { Input } from '../components/ui/input';
+import { useAuth } from '../context/AuthContext';
+import axios from 'axios';
+import { toast } from 'sonner';
+import { format } from 'date-fns';
+
+const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+
+export default function ChatPage() {
+  const navigate = useNavigate();
+  const { matchId } = useParams();
+  const { user } = useAuth();
+  const messagesEndRef = useRef(null);
+  
+  const [messages, setMessages] = useState([]);
+  const [matchInfo, setMatchInfo] = useState(null);
+  const [newMessage, setNewMessage] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSending, setIsSending] = useState(false);
+  const [starters, setStarters] = useState([]);
+  const [showStarters, setShowStarters] = useState(false);
+  const [loadingStarters, setLoadingStarters] = useState(false);
+
+  useEffect(() => {
+    fetchMessages();
+    fetchMatchInfo();
+  }, [matchId]);
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const fetchMessages = async () => {
+    try {
+      const res = await axios.get(`${API}/chat/${matchId}`);
+      setMessages(res.data.messages);
+    } catch (err) {
+      console.error('Failed to fetch messages:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const fetchMatchInfo = async () => {
+    try {
+      const res = await axios.get(`${API}/matches`);
+      const match = res.data.matches.find(m => m.match_id === matchId);
+      if (match) {
+        setMatchInfo(match);
+      }
+    } catch (err) {
+      console.error('Failed to fetch match info:', err);
+    }
+  };
+
+  const handleSend = async (e) => {
+    e?.preventDefault();
+    if (!newMessage.trim() || isSending) return;
+
+    const messageContent = newMessage.trim();
+    setNewMessage('');
+    setIsSending(true);
+    setShowStarters(false);
+
+    // Optimistic update
+    const optimisticMsg = {
+      id: `temp-${Date.now()}`,
+      sender_id: user.id,
+      content: messageContent,
+      created_at: new Date().toISOString()
+    };
+    setMessages(prev => [...prev, optimisticMsg]);
+
+    try {
+      const res = await axios.post(`${API}/chat/send`, {
+        match_id: matchId,
+        content: messageContent
+      });
+      
+      // Replace optimistic message with real one
+      setMessages(prev => 
+        prev.map(m => m.id === optimisticMsg.id ? res.data.message : m)
+      );
+    } catch (err) {
+      // Remove optimistic message on error
+      setMessages(prev => prev.filter(m => m.id !== optimisticMsg.id));
+      toast.error('Failed to send message');
+    } finally {
+      setIsSending(false);
+    }
+  };
+
+  const fetchConversationStarters = async () => {
+    if (starters.length > 0) {
+      setShowStarters(!showStarters);
+      return;
+    }
+
+    setLoadingStarters(true);
+    try {
+      const res = await axios.post(`${API}/ai/conversation-starters`, {
+        match_id: matchId
+      });
+      setStarters(res.data.starters);
+      setShowStarters(true);
+    } catch (err) {
+      toast.error('Failed to get conversation starters');
+    } finally {
+      setLoadingStarters(false);
+    }
+  };
+
+  const useStarter = (starter) => {
+    setNewMessage(starter);
+    setShowStarters(false);
+  };
+
+  const formatTime = (dateStr) => {
+    try {
+      return format(new Date(dateStr), 'h:mm a');
+    } catch {
+      return '';
+    }
+  };
+
+  return (
+    <div className="mobile-container min-h-screen bg-bone flex flex-col" data-testid="chat-page">
+      {/* Header */}
+      <header className="p-4 flex items-center gap-4 bg-white/80 backdrop-blur border-b border-border sticky top-0 z-20">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => navigate('/matches')}
+          className="text-charcoal -ml-2"
+          data-testid="back-btn"
+        >
+          <ArrowLeft className="w-5 h-5" />
+        </Button>
+        
+        <div className="flex items-center gap-3 flex-1">
+          <div className="w-10 h-10 rounded-full overflow-hidden bg-sage/10">
+            {matchInfo?.matched_user?.photo_url ? (
+              <img 
+                src={matchInfo.matched_user.photo_url}
+                alt={matchInfo.matched_user.name}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center">
+                <User className="w-5 h-5 text-sage/50" />
+              </div>
+            )}
+          </div>
+          <div>
+            <h2 className="font-serif text-lg text-charcoal">
+              {matchInfo?.matched_user?.name || 'Chat'}
+            </h2>
+            <p className="text-xs text-muted-foreground">
+              {matchInfo?.matched_user?.relationship_to_couple || 'Wedding Guest'}
+            </p>
+          </div>
+        </div>
+
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={fetchConversationStarters}
+          disabled={loadingStarters}
+          className="text-sage hover:text-sage/80"
+          data-testid="ai-starters-btn"
+        >
+          {loadingStarters ? (
+            <div className="w-5 h-5 border-2 border-sage border-t-transparent rounded-full animate-spin" />
+          ) : (
+            <Wand2 className="w-5 h-5" />
+          )}
+        </Button>
+      </header>
+
+      {/* AI Conversation Starters */}
+      {showStarters && starters.length > 0 && (
+        <div className="p-4 bg-accent/20 border-b border-accent/30 space-y-2 animate-fade-in">
+          <div className="flex items-center gap-2 text-sm text-charcoal mb-2">
+            <Sparkles className="w-4 h-4 text-sage" />
+            <span className="font-medium">AI Conversation Starters</span>
+          </div>
+          {starters.map((starter, i) => (
+            <button
+              key={i}
+              onClick={() => useStarter(starter)}
+              className="w-full text-left p-3 bg-white rounded-lg text-sm text-charcoal hover:bg-sage/5 transition-colors border border-border"
+              data-testid={`starter-${i}`}
+            >
+              {starter}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Messages */}
+      <main className="flex-1 p-4 overflow-y-auto">
+        {isLoading ? (
+          <div className="h-full flex items-center justify-center">
+            <div className="w-8 h-8 border-2 border-sage border-t-transparent rounded-full animate-spin" />
+          </div>
+        ) : messages.length > 0 ? (
+          <div className="space-y-3">
+            {messages.map((msg, index) => {
+              const isSent = msg.sender_id === user?.id;
+              return (
+                <div
+                  key={msg.id || index}
+                  className={`flex ${isSent ? 'justify-end' : 'justify-start'}`}
+                >
+                  <div className={`chat-bubble ${isSent ? 'chat-bubble-sent' : 'chat-bubble-received'}`}>
+                    <p>{msg.content}</p>
+                    <p className={`text-xs mt-1 ${isSent ? 'text-white/70' : 'text-muted-foreground'}`}>
+                      {formatTime(msg.created_at)}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
+            <div ref={messagesEndRef} />
+          </div>
+        ) : (
+          <div className="h-full flex flex-col items-center justify-center text-center">
+            <div className="w-16 h-16 bg-rose/10 rounded-full flex items-center justify-center mb-4">
+              <Sparkles className="w-8 h-8 text-rose" />
+            </div>
+            <h3 className="font-serif text-lg text-charcoal mb-2">Say Hello!</h3>
+            <p className="text-sm text-muted-foreground mb-4">
+              Start the conversation with {matchInfo?.matched_user?.name}
+            </p>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={fetchConversationStarters}
+              className="text-sage border-sage/30"
+              data-testid="get-starters-btn"
+            >
+              <Wand2 className="w-4 h-4 mr-2" />
+              Get AI Suggestions
+            </Button>
+          </div>
+        )}
+      </main>
+
+      {/* Message Input */}
+      <div className="p-4 bg-white/80 backdrop-blur border-t border-border">
+        <form onSubmit={handleSend} className="flex gap-3">
+          <Input
+            value={newMessage}
+            onChange={(e) => setNewMessage(e.target.value)}
+            placeholder="Type a message..."
+            className="flex-1 h-12 bg-bone border-border"
+            data-testid="message-input"
+          />
+          <Button
+            type="submit"
+            disabled={!newMessage.trim() || isSending}
+            className="h-12 w-12 bg-sage hover:bg-sage/90 rounded-full p-0"
+            data-testid="send-btn"
+          >
+            {isSending ? (
+              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+            ) : (
+              <Send className="w-5 h-5" />
+            )}
+          </Button>
+        </form>
+      </div>
+    </div>
+  );
+}
