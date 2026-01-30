@@ -195,7 +195,7 @@ export default function ChatPage() {
           {starters.map((starter, i) => (
             <button
               key={i}
-              onClick={() => useStarter(starter)}
+              onClick={() => selectStarter(starter)}
               className="w-full text-left p-3 bg-white rounded-lg text-sm text-charcoal hover:bg-sage/5 transition-colors border border-border"
               data-testid={`starter-${i}`}
             >
