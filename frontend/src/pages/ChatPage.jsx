@@ -118,7 +118,7 @@ export default function ChatPage() {
     }
   };
 
-  const useStarter = (starter) => {
+  const selectStarter = (starter) => {
     setNewMessage(starter);
     setShowStarters(false);
   };
