@@ -51,10 +51,21 @@ const EventRequired = ({ children }) => {
 function AppRoutes() {
   const { user } = useAuth();
   
+  // Determine where to redirect authenticated users
+  const getAuthRedirect = () => {
+    if (!user) return null;
+    if (user.is_host) return "/admin";
+    if (!user.event_id) return "/";
+    if (!user.profile_complete) return "/profile-setup";
+    return "/discover";
+  };
+  
+  const authRedirect = getAuthRedirect();
+  
   return (
     <Routes>
       <Route path="/" element={<LandingPage />} />
-      <Route path="/auth" element={user ? <Navigate to="/discover" replace /> : <AuthPage />} />
+      <Route path="/auth" element={user ? <Navigate to={authRedirect} replace /> : <AuthPage />} />
       <Route 
         path="/profile-setup" 
         element={
