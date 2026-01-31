@@ -318,13 +318,7 @@ export default function AdminDashboard() {
               </svg>
             </div>
             <h2 className="text-2xl text-foreground mb-2 tracking-tight">Create Your Wedding Matchmaking Experience</h2>
-            <p className="text-muted-foreground mb-2">Where you become the matchmaker</p>
-            <p className="text-muted-foreground mb-8 max-w-md mx-auto text-sm">
-              {hasPaid 
-                ? "You're all set! Create your event and get a unique code to share with your single guests."
-                : "One-time payment to host your wedding matching experience."
-              }
-            </p>
+            <p className="text-muted-foreground mb-8">Where you become the matchmaker</p>
             
             {!hasPaid ? (
               /* Payment Required */
