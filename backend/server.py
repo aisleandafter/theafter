@@ -311,6 +311,17 @@ def generate_event_code():
     import string
     return ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
 
+async def get_unique_event_code():
+    """Generate a unique event code, retrying if collision occurs"""
+    max_attempts = 10
+    for _ in range(max_attempts):
+        code = generate_event_code()
+        existing = await db.events.find_one({"code": code})
+        if not existing:
+            return code
+    # Fallback: use longer code if too many collisions
+    return ''.join(__import__('random').choices(__import__('string').ascii_uppercase + __import__('string').digits, k=8))
+
 @api_router.post("/events/create")
 async def create_event(data: EventCreate, user = Depends(get_current_user)):
     if not user.get("is_host"):
