@@ -634,7 +634,7 @@ Person 2: {other_user.get('name')}, {other_user.get('age', 'unknown age')}, inte
 
 @api_router.get("/")
 async def root():
-    return {"message": "Botanical Serendipity API"}
+    return {"message": "aisle & after API", "status": "healthy"}
 
 # Include router
 app.include_router(api_router)
