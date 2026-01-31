@@ -321,7 +321,7 @@ export default function AdminDashboard() {
             <p className="text-muted-foreground mb-8 max-w-md mx-auto">
               {hasPaid 
                 ? "You're all set! Create your event and get a unique code to share with your single guests."
-                : "One-time payment to unlock your wedding matching experience."
+                : "One-time payment to host your wedding matching experience."
               }
             </p>
             
