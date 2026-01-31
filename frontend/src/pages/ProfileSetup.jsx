@@ -312,7 +312,7 @@ export default function ProfileSetup() {
               {isLoading ? (
                 <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
               ) : (
-                'Find My Match'
+                'Meet the Guests'
               )}
             </Button>
           )}
