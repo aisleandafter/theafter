@@ -171,7 +171,7 @@ export default function LandingPage() {
             className="text-muted-foreground hover:text-foreground text-sm tracking-wide"
             data-testid="host-wedding-btn"
           >
-            Hosting a wedding? Create your event
+            Create your wedding event
           </Button>
         </footer>
       </div>
