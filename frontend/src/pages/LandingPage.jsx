@@ -85,7 +85,7 @@ export default function LandingPage() {
           <div className="space-y-10 animate-fade-in">
             {/* Logo - Large */}
             <div className="mb-4">
-              <img src={LOGO_URL} alt="aisle & after" className="h-12 md:h-14" />
+              <img src={LOGO_URL} alt="aisle & after" className="h-16 md:h-20" />
             </div>
             
             {/* Title */}
