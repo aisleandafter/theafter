@@ -67,8 +67,7 @@ export default function LandingPage() {
       {/* Content */}
       <div className="relative z-10 min-h-screen flex flex-col">
         {/* Header */}
-        <header className="p-6 flex justify-between items-center">
-          <img src={LOGO_URL} alt="aisle & after" className="logo-img" />
+        <header className="p-6 flex justify-end items-center">
           {user && (
             <Button 
               variant="ghost" 
@@ -84,18 +83,24 @@ export default function LandingPage() {
         {/* Main Content */}
         <main className="flex-1 flex flex-col justify-center px-8 pb-24">
           <div className="space-y-10 animate-fade-in">
+            {/* Logo - Large */}
+            <div className="mb-4">
+              <img src={LOGO_URL} alt="aisle & after" className="h-12 md:h-14" />
+            </div>
+            
             {/* Title */}
             <div className="space-y-6">
-              <p className="text-sm tracking-[0.3em] text-muted-foreground uppercase">
-                Where Love Stories Begin
+              <p className="text-base md:text-lg text-foreground/80 leading-relaxed max-w-sm italic">
+                Maybe weddings aren't just about celebrating love — maybe they're where it begins.
               </p>
-              <h1 className="text-4xl md:text-5xl text-foreground leading-tight tracking-tight">
-                Find Your<br />
-                Wedding Match
-              </h1>
-              <p className="text-muted-foreground text-lg leading-relaxed max-w-sm">
-                Connect with other single guests at the celebration. Your next chapter might begin with a dance.
-              </p>
+              <div className="pt-4">
+                <p className="text-2xl md:text-3xl text-foreground tracking-tight">
+                  From <span className="italic">aisle</span> to <span className="italic">after</span>?
+                </p>
+                <p className="text-lg text-muted-foreground mt-2">
+                  Let's find out who's single.
+                </p>
+              </div>
             </div>
 
             {/* Event Code Input */}
