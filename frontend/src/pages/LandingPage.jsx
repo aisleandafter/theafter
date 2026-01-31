@@ -101,10 +101,13 @@ export default function LandingPage() {
             </div>
 
             {/* Event Code Input */}
-            <div className="space-y-4">
+            <div className="space-y-3 pt-4">
+              <p className="text-sm tracking-wide text-muted-foreground uppercase">
+                Introductions begin here
+              </p>
               <div className="flex gap-3">
                 <Input
-                  placeholder="Event code"
+                  placeholder="Enter code"
                   value={eventCode}
                   onChange={(e) => setEventCode(e.target.value.toUpperCase())}
                   className="bg-white border-border/50 focus:border-foreground h-14 text-base tracking-[0.2em] uppercase placeholder:tracking-normal placeholder:normal-case"
@@ -125,7 +128,7 @@ export default function LandingPage() {
                 </Button>
               </div>
               <p className="text-sm text-muted-foreground">
-                Ask the couple for your event code
+                Ask the couple for the code
               </p>
             </div>
 
