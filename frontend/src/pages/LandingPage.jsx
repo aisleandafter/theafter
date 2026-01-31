@@ -91,10 +91,10 @@ export default function LandingPage() {
             {/* Title */}
             <div className="space-y-1">
               <p className="text-2xl md:text-3xl text-foreground leading-snug">
-                A wedding brings people together.
+                From celebrating love…
               </p>
               <p className="text-2xl md:text-3xl text-foreground/60 leading-snug">
-                We'll take it from here.
+                to finding it after the aisle, maybe.
               </p>
             </div>
 
