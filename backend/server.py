@@ -83,6 +83,12 @@ class MessageSend(BaseModel):
 class ConversationStarterRequest(BaseModel):
     match_id: str
 
+class PaymentInitRequest(BaseModel):
+    origin_url: str
+
+class PaymentStatusRequest(BaseModel):
+    session_id: str
+
 # ============ AUTH HELPERS ============
 
 def hash_password(password: str) -> str:
