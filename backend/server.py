@@ -316,6 +316,19 @@ async def create_event(data: EventCreate, user = Depends(get_current_user)):
     if not user.get("is_host"):
         raise HTTPException(status_code=403, detail="Only hosts can create events")
     
+    # Check if user has paid
+    paid_transaction = await db.payment_transactions.find_one({
+        "user_id": user["id"],
+        "payment_status": "paid"
+    })
+    if not paid_transaction:
+        raise HTTPException(status_code=402, detail="Payment required to create an event")
+    
+    # Check if user already has an event
+    existing_event = await db.events.find_one({"host_id": user["id"]})
+    if existing_event:
+        raise HTTPException(status_code=400, detail="You already have an event created")
+    
     event_id = str(uuid.uuid4())
     event_code = generate_event_code()
     
