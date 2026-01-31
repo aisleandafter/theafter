@@ -341,7 +341,7 @@ async def create_event(data: EventCreate, user = Depends(get_current_user)):
         raise HTTPException(status_code=400, detail="You already have an event created")
     
     event_id = str(uuid.uuid4())
-    event_code = generate_event_code()
+    event_code = await get_unique_event_code()
     
     event_doc = {
         "id": event_id,
