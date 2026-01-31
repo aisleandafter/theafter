@@ -276,7 +276,7 @@ export default function ProfileSetup() {
     <div className="mobile-container min-h-screen bg-white relative" data-testid="profile-setup-page">
       {/* Header */}
       <header className="p-6 flex justify-between items-center">
-        <img src={LOGO_URL} alt="aisle & after" className="h-6" />
+        <img src={LOGO_URL} alt="aisle & after" className="h-12" />
         <span className="text-sm text-muted-foreground tracking-wide">Step {step}/3</span>
       </header>
 

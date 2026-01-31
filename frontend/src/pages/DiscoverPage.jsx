@@ -73,7 +73,7 @@ export default function DiscoverPage() {
     <div className="mobile-container min-h-screen bg-white relative" data-testid="discover-page">
       {/* Header */}
       <header className="p-4 flex justify-between items-center sticky top-0 bg-white/90 backdrop-blur z-20 border-b border-border/50">
-        <img src={LOGO_URL} alt="aisle & after" className="h-5" />
+        <img src={LOGO_URL} alt="aisle & after" className="h-10" />
         <div className="flex items-center gap-1">
           <Button
             variant="ghost"

@@ -129,7 +129,7 @@ export default function AuthPage() {
           <div className="space-y-10">
             {/* Logo */}
             <div className="text-center space-y-6">
-              <img src={LOGO_URL} alt="aisle & after" className="h-8 mx-auto" />
+              <img src={LOGO_URL} alt="aisle & after" className="h-14 mx-auto" />
               <div className="space-y-2">
                 <h1 className="text-2xl text-foreground tracking-tight">
                   {isHost ? 'Host Dashboard' : 'Welcome'}
