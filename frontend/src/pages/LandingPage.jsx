@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Heart, Users, Sparkles, ArrowRight } from 'lucide-react';
+import { Users, ArrowRight } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../components/ui/dialog';
@@ -9,6 +9,7 @@ import axios from 'axios';
 import { toast } from 'sonner';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+const LOGO_URL = "https://customer-assets.emergentagent.com/job_14cfd5a5-e530-4fa4-8620-3c90f05d18d5/artifacts/mw7crcio_logo.png";
 
 export default function LandingPage() {
   const navigate = useNavigate();
@@ -56,9 +57,9 @@ export default function LandingPage() {
       {/* Hero Background */}
       <div className="absolute inset-0 z-0">
         <img 
-          src="https://images.unsplash.com/photo-1763984266799-fbcd1983f799?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1ODh8MHwxfHNlYXJjaHwxfHx3ZWRkaW5nJTIwdGFibGUlMjBzZXR0aW5nJTIwZmxvd2VycyUyMGVsZWdhbnR8ZW58MHx8fHwxNzY5Nzk3NzA4fDA&ixlib=rb-4.1.0&q=85"
-          alt="Wedding ambiance"
-          className="w-full h-full object-cover"
+          src="https://images.unsplash.com/photo-1519741497674-611481863552?w=800&q=80"
+          alt="Wedding"
+          className="w-full h-full object-cover opacity-20"
         />
         <div className="hero-overlay" />
       </div>
@@ -67,15 +68,12 @@ export default function LandingPage() {
       <div className="relative z-10 min-h-screen flex flex-col">
         {/* Header */}
         <header className="p-6 flex justify-between items-center">
-          <div className="flex items-center gap-2">
-            <Heart className="w-6 h-6 text-rose fill-rose" />
-            <span className="font-serif text-xl text-charcoal">Serendipity</span>
-          </div>
+          <img src={LOGO_URL} alt="aisle & after" className="logo-img" />
           {user && (
             <Button 
               variant="ghost" 
               onClick={() => navigate(user.is_host ? '/admin' : '/discover')}
-              className="text-charcoal hover:text-sage"
+              className="text-foreground hover:text-foreground/70 tracking-wide text-sm"
               data-testid="dashboard-btn"
             >
               Dashboard
@@ -84,17 +82,19 @@ export default function LandingPage() {
         </header>
 
         {/* Main Content */}
-        <main className="flex-1 flex flex-col justify-center px-6 pb-20">
-          <div className="space-y-8 animate-fade-in">
+        <main className="flex-1 flex flex-col justify-center px-8 pb-24">
+          <div className="space-y-10 animate-fade-in">
             {/* Title */}
-            <div className="space-y-4">
-              <p className="font-accent text-lg text-sage tracking-wide">Where Love Blooms</p>
-              <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl text-charcoal leading-tight">
-                Find Your <br />
-                <span className="text-rose">Wedding</span> Match
+            <div className="space-y-6">
+              <p className="text-sm tracking-[0.3em] text-muted-foreground uppercase">
+                Where Love Stories Begin
+              </p>
+              <h1 className="text-4xl md:text-5xl text-foreground leading-tight tracking-tight">
+                Find Your<br />
+                Wedding Match
               </h1>
               <p className="text-muted-foreground text-lg leading-relaxed max-w-sm">
-                Connect with other single guests at the celebration. Your next story might begin with a dance.
+                Connect with other single guests at the celebration. Your next chapter might begin with a dance.
               </p>
             </div>
 
@@ -102,17 +102,17 @@ export default function LandingPage() {
             <div className="space-y-4">
               <div className="flex gap-3">
                 <Input
-                  placeholder="Enter event code"
+                  placeholder="Event code"
                   value={eventCode}
                   onChange={(e) => setEventCode(e.target.value.toUpperCase())}
-                  className="bg-white/80 backdrop-blur border-border focus:border-sage h-14 text-lg font-mono tracking-widest uppercase"
+                  className="bg-white border-border/50 focus:border-foreground h-14 text-base tracking-[0.2em] uppercase placeholder:tracking-normal placeholder:normal-case"
                   maxLength={6}
                   data-testid="event-code-input"
                 />
                 <Button 
                   onClick={handleJoinEvent}
                   disabled={isJoining}
-                  className="bg-sage hover:bg-sage/90 text-white h-14 px-6 rounded-xl transition-transform hover:scale-105 active:scale-95"
+                  className="bg-foreground hover:bg-foreground/90 text-white h-14 px-6 rounded-sm"
                   data-testid="join-event-btn"
                 >
                   {isJoining ? (
@@ -123,29 +123,38 @@ export default function LandingPage() {
                 </Button>
               </div>
               <p className="text-sm text-muted-foreground">
-                Ask the bride & groom for the event code
+                Ask the couple for your event code
               </p>
             </div>
 
             {/* Features */}
-            <div className="grid grid-cols-3 gap-4 pt-8">
-              <div className="text-center space-y-2">
-                <div className="w-12 h-12 mx-auto bg-sage/10 rounded-full flex items-center justify-center">
-                  <Users className="w-5 h-5 text-sage" />
-                </div>
-                <p className="text-xs text-muted-foreground">Meet Singles</p>
+            <div className="pt-8">
+              <div className="elegant-divider text-xs tracking-[0.2em] text-muted-foreground uppercase">
+                The Experience
               </div>
-              <div className="text-center space-y-2">
-                <div className="w-12 h-12 mx-auto bg-rose/10 rounded-full flex items-center justify-center">
-                  <Heart className="w-5 h-5 text-rose" />
+              <div className="grid grid-cols-3 gap-6 mt-8">
+                <div className="text-center space-y-3">
+                  <div className="w-12 h-12 mx-auto border border-border flex items-center justify-center">
+                    <Users className="w-5 h-5 text-foreground/70" />
+                  </div>
+                  <p className="text-xs tracking-wide text-muted-foreground">Meet Singles</p>
                 </div>
-                <p className="text-xs text-muted-foreground">Find Matches</p>
-              </div>
-              <div className="text-center space-y-2">
-                <div className="w-12 h-12 mx-auto bg-accent/30 rounded-full flex items-center justify-center">
-                  <Sparkles className="w-5 h-5 text-charcoal" />
+                <div className="text-center space-y-3">
+                  <div className="w-12 h-12 mx-auto border border-border flex items-center justify-center">
+                    <svg className="w-5 h-5 text-foreground/70" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                    </svg>
+                  </div>
+                  <p className="text-xs tracking-wide text-muted-foreground">Find Matches</p>
                 </div>
-                <p className="text-xs text-muted-foreground">Spark Love</p>
+                <div className="text-center space-y-3">
+                  <div className="w-12 h-12 mx-auto border border-border flex items-center justify-center">
+                    <svg className="w-5 h-5 text-foreground/70" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                    </svg>
+                  </div>
+                  <p className="text-xs tracking-wide text-muted-foreground">Start Talking</p>
+                </div>
               </div>
             </div>
           </div>
@@ -156,7 +165,7 @@ export default function LandingPage() {
           <Button 
             variant="ghost" 
             onClick={handleHostClick}
-            className="text-sage hover:text-sage/80 font-serif"
+            className="text-muted-foreground hover:text-foreground text-sm tracking-wide"
             data-testid="host-wedding-btn"
           >
             Hosting a wedding? Create your event
@@ -166,22 +175,22 @@ export default function LandingPage() {
 
       {/* Join Dialog */}
       <Dialog open={showJoinDialog} onOpenChange={setShowJoinDialog}>
-        <DialogContent className="bg-bone border-border">
+        <DialogContent className="bg-white border-border">
           <DialogHeader>
-            <DialogTitle className="font-serif text-2xl text-charcoal">Join Wedding Event</DialogTitle>
+            <DialogTitle className="text-2xl text-foreground tracking-tight">Join Wedding Event</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 pt-4">
             <Input
               placeholder="Enter 6-digit code"
               value={eventCode}
               onChange={(e) => setEventCode(e.target.value.toUpperCase())}
-              className="h-14 text-center text-2xl font-mono tracking-[0.5em]"
+              className="h-14 text-center text-2xl tracking-[0.5em]"
               maxLength={6}
             />
             <Button 
               onClick={handleJoinEvent}
               disabled={isJoining}
-              className="w-full bg-sage hover:bg-sage/90 h-12"
+              className="w-full bg-foreground hover:bg-foreground/90 h-12"
             >
               {isJoining ? 'Joining...' : 'Join Event'}
             </Button>

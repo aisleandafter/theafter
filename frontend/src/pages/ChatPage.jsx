@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Send, User, Sparkles, Wand2 } from 'lucide-react';
+import { ArrowLeft, Send, User, Wand2 } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { useAuth } from '../context/AuthContext';
@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 import { format } from 'date-fns';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+const LOGO_URL = "https://customer-assets.emergentagent.com/job_14cfd5a5-e530-4fa4-8620-3c90f05d18d5/artifacts/mw7crcio_logo.png";
 
 export default function ChatPage() {
   const navigate = useNavigate();
@@ -85,12 +86,10 @@ export default function ChatPage() {
         content: messageContent
       });
       
-      // Replace optimistic message with real one
       setMessages(prev => 
         prev.map(m => m.id === optimisticMsg.id ? res.data.message : m)
       );
     } catch (err) {
-      // Remove optimistic message on error
       setMessages(prev => prev.filter(m => m.id !== optimisticMsg.id));
       toast.error('Failed to send message');
     } finally {
@@ -132,21 +131,21 @@ export default function ChatPage() {
   };
 
   return (
-    <div className="mobile-container min-h-screen bg-bone flex flex-col" data-testid="chat-page">
+    <div className="mobile-container min-h-screen bg-white flex flex-col" data-testid="chat-page">
       {/* Header */}
-      <header className="p-4 flex items-center gap-4 bg-white/80 backdrop-blur border-b border-border sticky top-0 z-20">
+      <header className="p-4 flex items-center gap-4 bg-white/90 backdrop-blur border-b border-border/50 sticky top-0 z-20">
         <Button
           variant="ghost"
           size="sm"
           onClick={() => navigate('/matches')}
-          className="text-charcoal -ml-2"
+          className="text-foreground -ml-2"
           data-testid="back-btn"
         >
           <ArrowLeft className="w-5 h-5" />
         </Button>
         
         <div className="flex items-center gap-3 flex-1">
-          <div className="w-10 h-10 rounded-full overflow-hidden bg-sage/10">
+          <div className="w-10 h-10 overflow-hidden bg-muted/30">
             {matchInfo?.matched_user?.photo_url ? (
               <img 
                 src={matchInfo.matched_user.photo_url}
@@ -155,12 +154,12 @@ export default function ChatPage() {
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center">
-                <User className="w-5 h-5 text-sage/50" />
+                <User className="w-5 h-5 text-muted-foreground/30" />
               </div>
             )}
           </div>
           <div>
-            <h2 className="font-serif text-lg text-charcoal">
+            <h2 className="text-lg text-foreground tracking-tight">
               {matchInfo?.matched_user?.name || 'Chat'}
             </h2>
             <p className="text-xs text-muted-foreground">
@@ -174,11 +173,11 @@ export default function ChatPage() {
           size="sm"
           onClick={fetchConversationStarters}
           disabled={loadingStarters}
-          className="text-sage hover:text-sage/80"
+          className="text-foreground/70 hover:text-foreground"
           data-testid="ai-starters-btn"
         >
           {loadingStarters ? (
-            <div className="w-5 h-5 border-2 border-sage border-t-transparent rounded-full animate-spin" />
+            <div className="w-5 h-5 border border-foreground border-t-transparent rounded-full animate-spin" />
           ) : (
             <Wand2 className="w-5 h-5" />
           )}
@@ -187,16 +186,16 @@ export default function ChatPage() {
 
       {/* AI Conversation Starters */}
       {showStarters && starters.length > 0 && (
-        <div className="p-4 bg-accent/20 border-b border-accent/30 space-y-2 animate-fade-in">
-          <div className="flex items-center gap-2 text-sm text-charcoal mb-2">
-            <Sparkles className="w-4 h-4 text-sage" />
-            <span className="font-medium">AI Conversation Starters</span>
+        <div className="p-4 bg-muted/20 border-b border-border/50 space-y-2 animate-fade-in">
+          <div className="flex items-center gap-2 text-xs text-muted-foreground tracking-wide uppercase mb-3">
+            <Wand2 className="w-3 h-3" />
+            <span>AI Suggestions</span>
           </div>
           {starters.map((starter, i) => (
             <button
               key={i}
               onClick={() => selectStarter(starter)}
-              className="w-full text-left p-3 bg-white rounded-lg text-sm text-charcoal hover:bg-sage/5 transition-colors border border-border"
+              className="w-full text-left p-3 bg-white text-sm text-foreground hover:bg-muted/30 transition-colors border border-border/50"
               data-testid={`starter-${i}`}
             >
               {starter}
@@ -209,7 +208,7 @@ export default function ChatPage() {
       <main className="flex-1 p-4 overflow-y-auto">
         {isLoading ? (
           <div className="h-full flex items-center justify-center">
-            <div className="w-8 h-8 border-2 border-sage border-t-transparent rounded-full animate-spin" />
+            <div className="w-6 h-6 border border-foreground border-t-transparent rounded-full animate-spin" />
           </div>
         ) : messages.length > 0 ? (
           <div className="space-y-3">
@@ -222,7 +221,7 @@ export default function ChatPage() {
                 >
                   <div className={`chat-bubble ${isSent ? 'chat-bubble-sent' : 'chat-bubble-received'}`}>
                     <p>{msg.content}</p>
-                    <p className={`text-xs mt-1 ${isSent ? 'text-white/70' : 'text-muted-foreground'}`}>
+                    <p className={`text-xs mt-1 ${isSent ? 'text-white/60' : 'text-muted-foreground'}`}>
                       {formatTime(msg.created_at)}
                     </p>
                   </div>
@@ -233,10 +232,12 @@ export default function ChatPage() {
           </div>
         ) : (
           <div className="h-full flex flex-col items-center justify-center text-center">
-            <div className="w-16 h-16 bg-rose/10 rounded-full flex items-center justify-center mb-4">
-              <Sparkles className="w-8 h-8 text-rose" />
+            <div className="w-14 h-14 border border-border flex items-center justify-center mb-4">
+              <svg className="w-6 h-6 text-muted-foreground/30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+              </svg>
             </div>
-            <h3 className="font-serif text-lg text-charcoal mb-2">Say Hello!</h3>
+            <h3 className="text-lg text-foreground mb-2 tracking-tight">Say Hello</h3>
             <p className="text-sm text-muted-foreground mb-4">
               Start the conversation with {matchInfo?.matched_user?.name}
             </p>
@@ -244,7 +245,7 @@ export default function ChatPage() {
               variant="outline"
               size="sm"
               onClick={fetchConversationStarters}
-              className="text-sage border-sage/30"
+              className="text-foreground border-border rounded-none"
               data-testid="get-starters-btn"
             >
               <Wand2 className="w-4 h-4 mr-2" />
@@ -255,19 +256,19 @@ export default function ChatPage() {
       </main>
 
       {/* Message Input */}
-      <div className="p-4 bg-white/80 backdrop-blur border-t border-border">
+      <div className="p-4 bg-white/90 backdrop-blur border-t border-border/50">
         <form onSubmit={handleSend} className="flex gap-3">
           <Input
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
             placeholder="Type a message..."
-            className="flex-1 h-12 bg-bone border-border"
+            className="flex-1 h-12 bg-muted/20 border-border/50 focus:border-foreground rounded-none"
             data-testid="message-input"
           />
           <Button
             type="submit"
             disabled={!newMessage.trim() || isSending}
-            className="h-12 w-12 bg-sage hover:bg-sage/90 rounded-full p-0"
+            className="h-12 w-12 bg-foreground hover:bg-foreground/90 rounded-none p-0"
             data-testid="send-btn"
           >
             {isSending ? (
