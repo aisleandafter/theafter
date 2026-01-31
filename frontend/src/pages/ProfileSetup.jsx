@@ -187,9 +187,9 @@ export default function ProfileSetup() {
 
             <div className="space-y-6">
               <div className="space-y-2">
-                <Label className="text-foreground text-sm tracking-wide">Bio</Label>
+                <Label className="text-foreground text-sm tracking-wide">About you</Label>
                 <Textarea
-                  placeholder="A little about yourself..."
+                  placeholder="A little about you: interests, energy, or what brings you here."
                   value={profile.bio}
                   onChange={(e) => setProfile({ ...profile, bio: e.target.value })}
                   className="bg-white border-border/50 focus:border-foreground min-h-[100px] resize-none rounded-none"
@@ -221,7 +221,7 @@ export default function ProfileSetup() {
               <div className="space-y-2">
                 <Label className="text-foreground text-sm tracking-wide">Fun fact about you</Label>
                 <Input
-                  placeholder="e.g., I can juggle 5 balls"
+                  placeholder="Something people wouldn't guess about you"
                   value={profile.fun_fact}
                   onChange={(e) => setProfile({ ...profile, fun_fact: e.target.value })}
                   className="h-12 bg-white border-border/50 focus:border-foreground rounded-none"
