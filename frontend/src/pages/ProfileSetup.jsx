@@ -22,7 +22,7 @@ const INTERESTS = [
 
 const RELATIONSHIPS = [
   "Friend of Bride", "Friend of Groom", "Family of Bride", 
-  "Family of Groom", "Colleague", "Plus One"
+  "Family of Groom", "Colleague"
 ];
 
 export default function ProfileSetup() {
