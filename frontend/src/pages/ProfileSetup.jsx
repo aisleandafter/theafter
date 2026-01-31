@@ -15,9 +15,9 @@ const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 const LOGO_URL = "https://customer-assets.emergentagent.com/job_14cfd5a5-e530-4fa4-8620-3c90f05d18d5/artifacts/mw7crcio_logo.png";
 
 const INTERESTS = [
-  'Dancing', 'Music', 'Travel', 'Wine', 'Photography', 
-  'Art', 'Sports', 'Reading', 'Cinema', 'Fitness', 
-  'Cooking', 'Nature', 'Gaming', 'Fashion', 'Tech'
+  'Dancing late', 'Live music', 'Travel', 'Wine & cocktails', 'Photography', 
+  'Art & culture', 'Sports', 'Books', 'Film', 'Wellness', 
+  'Food & cooking', 'Outdoors', 'Games', 'Style', 'Tech'
 ];
 
 const RELATIONSHIPS = [
