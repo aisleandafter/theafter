@@ -83,21 +83,19 @@ export default function LandingPage() {
         {/* Main Content */}
         <main className="flex-1 flex flex-col justify-center px-8 pb-24">
           <div className="space-y-10 animate-fade-in">
-            {/* Logo - Large */}
-            <div className="mb-6">
-              <img src={LOGO_URL} alt="aisle & after" className="h-16 md:h-20" />
+            {/* Logo - Large & Centered */}
+            <div className="mb-8 text-center">
+              <img src={LOGO_URL} alt="aisle & after" className="h-20 md:h-24 mx-auto" />
             </div>
             
             {/* Title */}
-            <div className="space-y-8">
-              <div className="space-y-3">
-                <p className="text-2xl md:text-3xl text-foreground leading-snug">
-                  A wedding brings people together.
-                </p>
-                <p className="text-2xl md:text-3xl text-foreground/60 leading-snug">
-                  We'll take it from here.
-                </p>
-              </div>
+            <div className="space-y-1">
+              <p className="text-2xl md:text-3xl text-foreground leading-snug">
+                A wedding brings people together.
+              </p>
+              <p className="text-2xl md:text-3xl text-foreground/60 leading-snug">
+                We'll take it from here.
+              </p>
             </div>
 
             {/* Event Code Input */}
