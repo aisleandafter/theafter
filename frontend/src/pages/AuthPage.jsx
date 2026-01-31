@@ -171,7 +171,7 @@ export default function AuthPage() {
                         placeholder="your@email.com"
                         value={loginForm.email}
                         onChange={(e) => setLoginForm({ ...loginForm, email: e.target.value })}
-                        className="pl-10 h-12 bg-white border-border/50 focus:border-foreground rounded-none"
+                        className="pl-10 h-12 bg-white border-border/50 focus:border-foreground rounded-none placeholder:text-xs"
                         required
                         data-testid="login-email"
                       />
@@ -186,7 +186,7 @@ export default function AuthPage() {
                         placeholder="••••••••"
                         value={loginForm.password}
                         onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })}
-                        className="pl-10 h-12 bg-white border-border/50 focus:border-foreground rounded-none"
+                        className="pl-10 h-12 bg-white border-border/50 focus:border-foreground rounded-none placeholder:text-xs"
                         required
                         data-testid="login-password"
                       />
@@ -219,7 +219,7 @@ export default function AuthPage() {
                         placeholder="Your name"
                         value={registerForm.name}
                         onChange={(e) => setRegisterForm({ ...registerForm, name: e.target.value })}
-                        className="pl-10 h-12 bg-white border-border/50 focus:border-foreground rounded-none"
+                        className="pl-10 h-12 bg-white border-border/50 focus:border-foreground rounded-none placeholder:text-xs"
                         required
                         data-testid="register-name"
                       />
@@ -234,7 +234,7 @@ export default function AuthPage() {
                         placeholder="your@email.com"
                         value={registerForm.email}
                         onChange={(e) => setRegisterForm({ ...registerForm, email: e.target.value })}
-                        className="pl-10 h-12 bg-white border-border/50 focus:border-foreground rounded-none"
+                        className="pl-10 h-12 bg-white border-border/50 focus:border-foreground rounded-none placeholder:text-xs"
                         required
                         data-testid="register-email"
                       />
@@ -249,7 +249,7 @@ export default function AuthPage() {
                         placeholder="••••••••"
                         value={registerForm.password}
                         onChange={(e) => setRegisterForm({ ...registerForm, password: e.target.value })}
-                        className="pl-10 h-12 bg-white border-border/50 focus:border-foreground rounded-none"
+                        className="pl-10 h-12 bg-white border-border/50 focus:border-foreground rounded-none placeholder:text-xs"
                         required
                         minLength={6}
                         data-testid="register-password"

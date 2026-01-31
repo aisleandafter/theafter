@@ -108,7 +108,7 @@ export default function LandingPage() {
                   placeholder="Enter code"
                   value={eventCode}
                   onChange={(e) => setEventCode(e.target.value.toUpperCase())}
-                  className="bg-white border-border/50 focus:border-foreground h-14 text-base tracking-[0.2em] uppercase placeholder:tracking-normal placeholder:normal-case"
+                  className="bg-white border-border/50 focus:border-foreground h-14 text-base tracking-[0.2em] uppercase placeholder:text-xs placeholder:tracking-normal placeholder:normal-case"
                   maxLength={6}
                   data-testid="event-code-input"
                 />

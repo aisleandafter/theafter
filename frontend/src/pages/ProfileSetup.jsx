@@ -132,7 +132,7 @@ export default function ProfileSetup() {
                   placeholder="Your age"
                   value={profile.age}
                   onChange={(e) => setProfile({ ...profile, age: e.target.value })}
-                  className="h-12 bg-white border-border/50 focus:border-foreground rounded-none"
+                  className="h-12 bg-white border-border/50 focus:border-foreground rounded-none placeholder:text-xs"
                   min={18}
                   max={100}
                   required
@@ -175,7 +175,7 @@ export default function ProfileSetup() {
                   placeholder="A little about you: interests, energy, or what brings you here."
                   value={profile.bio}
                   onChange={(e) => setProfile({ ...profile, bio: e.target.value })}
-                  className="bg-white border-border/50 focus:border-foreground min-h-[100px] resize-none rounded-none"
+                  className="bg-white border-border/50 focus:border-foreground min-h-[100px] resize-none rounded-none placeholder:text-xs"
                   maxLength={200}
                   data-testid="bio-input"
                 />
@@ -207,7 +207,7 @@ export default function ProfileSetup() {
                   placeholder="Something people wouldn't guess about you"
                   value={profile.fun_fact}
                   onChange={(e) => setProfile({ ...profile, fun_fact: e.target.value })}
-                  className="h-12 bg-white border-border/50 focus:border-foreground rounded-none"
+                  className="h-12 bg-white border-border/50 focus:border-foreground rounded-none placeholder:text-xs"
                   maxLength={100}
                   data-testid="fun-fact-input"
                 />
