@@ -182,7 +182,7 @@ export default function ProfileSetup() {
           <div className="space-y-8 animate-fade-in">
             <div className="text-center space-y-2">
               <h2 className="text-2xl text-foreground tracking-tight">About You</h2>
-              <p className="text-muted-foreground text-sm">Help others get to know you better</p>
+              <p className="text-muted-foreground text-sm">A few details to start a conversation</p>
             </div>
 
             <div className="space-y-6">
