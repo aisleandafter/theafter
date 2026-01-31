@@ -158,13 +158,13 @@ export default function ProfileSetup() {
               </div>
 
               <div className="space-y-2">
-                <Label className="text-foreground text-sm tracking-wide">Looking for *</Label>
+                <Label className="text-foreground text-sm tracking-wide">Interested in *</Label>
                 <Select 
                   value={profile.looking_for} 
                   onValueChange={(val) => setProfile({ ...profile, looking_for: val })}
                 >
                   <SelectTrigger className="h-12 bg-white border-border/50 rounded-none" data-testid="looking-for-select">
-                    <SelectValue placeholder="Interested in" />
+                    <SelectValue placeholder="Select preference" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="men">Men</SelectItem>
