@@ -134,8 +134,8 @@ export default function AuthPage() {
                 <h1 className="text-2xl text-foreground tracking-tight">
                   {isHost ? 'Host Dashboard' : 'Welcome'}
                 </h1>
-                <p className="text-muted-foreground text-sm">
-                  {isHost ? 'Create and manage your wedding event' : 'Sign in to find your match'}
+                <p className="text-sm text-muted-foreground">
+                  {isHost ? 'Create and manage your wedding event' : 'Sign in to meet the guests'}
                 </p>
               </div>
             </div>
