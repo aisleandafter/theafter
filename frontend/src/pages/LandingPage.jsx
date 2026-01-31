@@ -130,36 +130,7 @@ export default function LandingPage() {
               </p>
             </div>
 
-            {/* Features */}
-            <div className="pt-8">
-              <div className="elegant-divider text-xs tracking-[0.2em] text-muted-foreground uppercase">
-                The Experience
-              </div>
-              <div className="grid grid-cols-3 gap-6 mt-8">
-                <div className="text-center space-y-3">
-                  <div className="w-12 h-12 mx-auto border border-border flex items-center justify-center">
-                    <Users className="w-5 h-5 text-foreground/70" />
-                  </div>
-                  <p className="text-xs tracking-wide text-muted-foreground">Meet the Guests</p>
-                </div>
-                <div className="text-center space-y-3">
-                  <div className="w-12 h-12 mx-auto border border-border flex items-center justify-center">
-                    <svg className="w-5 h-5 text-foreground/70" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-                    </svg>
-                  </div>
-                  <p className="text-xs tracking-wide text-muted-foreground">Find Matches</p>
-                </div>
-                <div className="text-center space-y-3">
-                  <div className="w-12 h-12 mx-auto border border-border flex items-center justify-center">
-                    <svg className="w-5 h-5 text-foreground/70" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-                    </svg>
-                  </div>
-                  <p className="text-xs tracking-wide text-muted-foreground">Start Talking</p>
-                </div>
-              </div>
-            </div>
+ 
           </div>
         </main>
 
