@@ -141,23 +141,6 @@ export default function ProfileSetup() {
               </div>
 
               <div className="space-y-2">
-                <Label className="text-foreground text-sm tracking-wide">I am *</Label>
-                <Select 
-                  value={profile.gender} 
-                  onValueChange={(val) => setProfile({ ...profile, gender: val })}
-                >
-                  <SelectTrigger className="h-12 bg-white border-border/50 rounded-none" data-testid="gender-select">
-                    <SelectValue placeholder="Select gender" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="male">Male</SelectItem>
-                    <SelectItem value="female">Female</SelectItem>
-                    <SelectItem value="non-binary">Non-binary</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
                 <Label className="text-foreground text-sm tracking-wide">Interested in *</Label>
                 <Select 
                   value={profile.looking_for} 
