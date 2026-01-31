@@ -93,7 +93,7 @@ export default function ProfileSetup() {
           <div className="space-y-8 animate-fade-in">
             <div className="text-center space-y-2">
               <h2 className="text-2xl text-foreground tracking-tight">Your Photo</h2>
-              <p className="text-muted-foreground text-sm">Add a photo so others can recognize you</p>
+              <p className="text-muted-foreground text-sm">Add a photo so guests can recognize you</p>
             </div>
 
             {/* Photo Upload */}
