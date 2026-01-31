@@ -140,7 +140,7 @@ export default function LandingPage() {
                   <div className="w-12 h-12 mx-auto border border-border flex items-center justify-center">
                     <Users className="w-5 h-5 text-foreground/70" />
                   </div>
-                  <p className="text-xs tracking-wide text-muted-foreground">Meet Singles</p>
+                  <p className="text-xs tracking-wide text-muted-foreground">Meet the Guests</p>
                 </div>
                 <div className="text-center space-y-3">
                   <div className="w-12 h-12 mx-auto border border-border flex items-center justify-center">
