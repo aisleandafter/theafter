@@ -154,6 +154,156 @@ async def login(data: UserLogin):
 async def get_me(user = Depends(get_current_user)):
     return {"user": user}
 
+# ============ PAYMENT ENDPOINTS ============
+
+@api_router.post("/payments/checkout")
+async def create_checkout(data: PaymentInitRequest, request: Request, user = Depends(get_current_user)):
+    if not user.get("is_host"):
+        raise HTTPException(status_code=403, detail="Only hosts can purchase event packages")
+    
+    # Check if user already has a paid event
+    existing_payment = await db.payment_transactions.find_one({
+        "user_id": user["id"],
+        "payment_status": "paid"
+    })
+    if existing_payment:
+        raise HTTPException(status_code=400, detail="You already have an active event package")
+    
+    # Initialize Stripe
+    host_url = str(request.base_url).rstrip('/')
+    webhook_url = f"{host_url}/api/webhook/stripe"
+    stripe_checkout = StripeCheckout(api_key=STRIPE_API_KEY, webhook_url=webhook_url)
+    
+    # Create checkout session
+    success_url = f"{data.origin_url}/admin?session_id={{CHECKOUT_SESSION_ID}}"
+    cancel_url = f"{data.origin_url}/admin"
+    
+    checkout_request = CheckoutSessionRequest(
+        amount=EVENT_PRICE,
+        currency="usd",
+        success_url=success_url,
+        cancel_url=cancel_url,
+        metadata={
+            "user_id": user["id"],
+            "user_email": user["email"],
+            "product": "wedding_event"
+        }
+    )
+    
+    session = await stripe_checkout.create_checkout_session(checkout_request)
+    
+    # Create payment transaction record
+    transaction_doc = {
+        "id": str(uuid.uuid4()),
+        "session_id": session.session_id,
+        "user_id": user["id"],
+        "user_email": user["email"],
+        "amount": EVENT_PRICE,
+        "currency": "usd",
+        "payment_status": "pending",
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.payment_transactions.insert_one(transaction_doc)
+    
+    return {"checkout_url": session.url, "session_id": session.session_id}
+
+@api_router.get("/payments/status/{session_id}")
+async def get_payment_status(session_id: str, request: Request, user = Depends(get_current_user)):
+    # Initialize Stripe
+    host_url = str(request.base_url).rstrip('/')
+    webhook_url = f"{host_url}/api/webhook/stripe"
+    stripe_checkout = StripeCheckout(api_key=STRIPE_API_KEY, webhook_url=webhook_url)
+    
+    # Get status from Stripe
+    status = await stripe_checkout.get_checkout_status(session_id)
+    
+    # Update transaction in database
+    if status.payment_status == "paid":
+        # Check if already processed
+        existing = await db.payment_transactions.find_one({
+            "session_id": session_id,
+            "payment_status": "paid"
+        })
+        
+        if not existing:
+            await db.payment_transactions.update_one(
+                {"session_id": session_id},
+                {"$set": {
+                    "payment_status": "paid",
+                    "status": status.status,
+                    "paid_at": datetime.now(timezone.utc).isoformat()
+                }}
+            )
+            # Mark user as having paid
+            await db.users.update_one(
+                {"id": user["id"]},
+                {"$set": {"has_paid": True}}
+            )
+    else:
+        await db.payment_transactions.update_one(
+            {"session_id": session_id},
+            {"$set": {
+                "payment_status": status.payment_status,
+                "status": status.status
+            }}
+        )
+    
+    return {
+        "status": status.status,
+        "payment_status": status.payment_status,
+        "amount": status.amount_total / 100,  # Convert cents to dollars
+        "currency": status.currency
+    }
+
+@api_router.get("/payments/check")
+async def check_payment_status(user = Depends(get_current_user)):
+    """Check if user has paid for event creation"""
+    if not user.get("is_host"):
+        return {"has_paid": False}
+    
+    # Check if user has paid
+    paid_transaction = await db.payment_transactions.find_one({
+        "user_id": user["id"],
+        "payment_status": "paid"
+    })
+    
+    return {"has_paid": bool(paid_transaction), "price": EVENT_PRICE}
+
+@api_router.post("/webhook/stripe")
+async def stripe_webhook(request: Request):
+    """Handle Stripe webhook events"""
+    body = await request.body()
+    signature = request.headers.get("Stripe-Signature")
+    
+    host_url = str(request.base_url).rstrip('/')
+    webhook_url = f"{host_url}/api/webhook/stripe"
+    stripe_checkout = StripeCheckout(api_key=STRIPE_API_KEY, webhook_url=webhook_url)
+    
+    try:
+        webhook_response = await stripe_checkout.handle_webhook(body, signature)
+        
+        if webhook_response.payment_status == "paid":
+            # Update transaction
+            await db.payment_transactions.update_one(
+                {"session_id": webhook_response.session_id},
+                {"$set": {
+                    "payment_status": "paid",
+                    "paid_at": datetime.now(timezone.utc).isoformat()
+                }}
+            )
+            
+            # Mark user as having paid
+            if webhook_response.metadata and "user_id" in webhook_response.metadata:
+                await db.users.update_one(
+                    {"id": webhook_response.metadata["user_id"]},
+                    {"$set": {"has_paid": True}}
+                )
+        
+        return {"status": "success"}
+    except Exception as e:
+        logging.error(f"Webhook error: {e}")
+        raise HTTPException(status_code=400, detail=str(e))
+
 # ============ EVENT ENDPOINTS ============
 
 def generate_event_code():
