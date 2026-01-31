@@ -84,21 +84,18 @@ export default function LandingPage() {
         <main className="flex-1 flex flex-col justify-center px-8 pb-24">
           <div className="space-y-10 animate-fade-in">
             {/* Logo - Large */}
-            <div className="mb-4">
+            <div className="mb-6">
               <img src={LOGO_URL} alt="aisle & after" className="h-16 md:h-20" />
             </div>
             
             {/* Title */}
-            <div className="space-y-6">
-              <p className="text-base md:text-lg text-foreground/80 leading-relaxed max-w-sm italic">
-                Maybe weddings aren't just about celebrating love — maybe they're where it begins.
-              </p>
-              <div className="pt-4">
-                <p className="text-2xl md:text-3xl text-foreground tracking-tight">
-                  From <span className="italic">aisle</span> to <span className="italic">after</span>?
+            <div className="space-y-8">
+              <div className="space-y-3">
+                <p className="text-2xl md:text-3xl text-foreground leading-snug">
+                  A wedding brings people together.
                 </p>
-                <p className="text-lg text-muted-foreground mt-2">
-                  Let's find out who's single.
+                <p className="text-2xl md:text-3xl text-foreground/60 leading-snug">
+                  We'll take it from here.
                 </p>
               </div>
             </div>
