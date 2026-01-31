@@ -230,7 +230,7 @@ export default function ProfileSetup() {
                   key={interest}
                   variant="outline"
                   className={`
-                    cursor-pointer px-4 py-2 text-xs tracking-wide uppercase transition-colors rounded-none
+                    cursor-pointer px-4 py-2 text-sm font-normal tracking-normal transition-colors rounded-none font-serif
                     ${profile.interests.includes(interest) 
                       ? 'bg-foreground text-white border-foreground hover:bg-foreground/90' 
                       : 'bg-white text-foreground hover:bg-muted/50 border-border'
