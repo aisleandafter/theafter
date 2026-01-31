@@ -65,7 +65,7 @@ export default function ProfileSetup() {
   };
 
   const handleSubmit = async () => {
-    if (!profile.age || !profile.gender || !profile.looking_for) {
+    if (!profile.age || !profile.looking_for) {
       toast.error('Please fill in all required fields');
       return;
     }
