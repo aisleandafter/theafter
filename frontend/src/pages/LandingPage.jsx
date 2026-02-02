@@ -84,7 +84,7 @@ export default function LandingPage() {
             {/* Logo */}
             <div className="flex justify-center">
               <div className="w-48 h-48 md:w-56 md:h-56 rounded-full border border-border/40 flex items-center justify-center bg-white shadow-soft">
-                <img src={LOGO_URL} alt="aisle & after" className="h-24 md:h-28" />
+                <img src={LOGO_URL} alt="aisle & after" className="h-36 md:h-44" />
               </div>
             </div>
             
