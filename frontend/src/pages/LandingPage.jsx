@@ -80,7 +80,7 @@ export default function LandingPage() {
 
         {/* Main Content */}
         <main className="flex-1 flex flex-col justify-center px-8 pb-32">
-          <div className="space-y-12 animate-fade-up">
+          <div className="space-y-10 animate-fade-up text-center">
             {/* Logo */}
             <div className="flex justify-center">
               <div className="w-48 h-48 md:w-56 md:h-56 rounded-full border border-border/40 flex items-center justify-center bg-white shadow-soft">
