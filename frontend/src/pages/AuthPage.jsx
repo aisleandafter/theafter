@@ -20,7 +20,6 @@ export default function AuthPage() {
   const [isHost, setIsHost] = useState(false);
   const [activeTab, setActiveTab] = useState('login');
 
-  // Form states
   const [loginForm, setLoginForm] = useState({ email: '', password: '' });
   const [registerForm, setRegisterForm] = useState({ name: '', email: '', password: '' });
 
@@ -40,7 +39,6 @@ export default function AuthPage() {
       const user = await login(loginForm.email, loginForm.password);
       toast.success(`Welcome back, ${user.name}`);
       
-      // Check for pending event code
       const pendingCode = localStorage.getItem('pendingEventCode');
       if (pendingCode) {
         try {
@@ -103,20 +101,14 @@ export default function AuthPage() {
   };
 
   return (
-    <div className="mobile-container min-h-screen relative" data-testid="auth-page">
-      {/* Background */}
-      <div className="absolute inset-0 z-0">
-        <div className="absolute inset-0 bg-white" />
-      </div>
-
-      {/* Content */}
+    <div className="mobile-container min-h-screen relative noise-bg" data-testid="auth-page">
       <div className="relative z-10 min-h-screen flex flex-col">
         {/* Header */}
         <header className="p-6">
           <Button 
             variant="ghost" 
             onClick={() => navigate('/')}
-            className="text-foreground hover:text-foreground/70 -ml-2 text-sm tracking-wide"
+            className="text-foreground/70 hover:text-foreground -ml-2 font-sans text-sm"
             data-testid="back-btn"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
@@ -126,15 +118,15 @@ export default function AuthPage() {
 
         {/* Main Content */}
         <main className="flex-1 flex flex-col justify-center px-8 pb-12">
-          <div className="space-y-10">
+          <div className="space-y-10 animate-fade-up">
             {/* Logo */}
-            <div className="text-center space-y-6">
-              <img src={LOGO_URL} alt="aisle & after" className="h-14 mx-auto" />
-              <div className="space-y-2">
-                <h1 className="text-2xl text-foreground tracking-tight">
+            <div className="space-y-6">
+              <img src={LOGO_URL} alt="aisle & after" className="h-16" />
+              <div className="space-y-1">
+                <h1 className="font-serif text-3xl text-foreground tracking-tight">
                   {isHost ? 'Host Dashboard' : 'Welcome'}
                 </h1>
-                <p className="text-sm text-muted-foreground">
+                <p className="font-sans text-sm text-muted-foreground">
                   {isHost ? 'Create and manage your wedding event' : 'Sign in to meet the guests'}
                 </p>
               </div>
@@ -142,17 +134,17 @@ export default function AuthPage() {
 
             {/* Auth Tabs */}
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="grid w-full grid-cols-2 bg-muted/30 rounded-none p-1 h-12">
+              <TabsList className="grid w-full grid-cols-2 bg-muted/50 rounded-full p-1 h-12">
                 <TabsTrigger 
                   value="login" 
-                  className="rounded-none data-[state=active]:bg-white data-[state=active]:text-foreground text-sm tracking-wide"
+                  className="rounded-full data-[state=active]:bg-white data-[state=active]:text-foreground font-sans text-sm data-[state=active]:shadow-soft"
                   data-testid="login-tab"
                 >
                   Sign In
                 </TabsTrigger>
                 <TabsTrigger 
                   value="register" 
-                  className="rounded-none data-[state=active]:bg-white data-[state=active]:text-foreground text-sm tracking-wide"
+                  className="rounded-full data-[state=active]:bg-white data-[state=active]:text-foreground font-sans text-sm data-[state=active]:shadow-soft"
                   data-testid="register-tab"
                 >
                   Register
@@ -163,30 +155,30 @@ export default function AuthPage() {
               <TabsContent value="login" className="mt-8">
                 <form onSubmit={handleLogin} className="space-y-6">
                   <div className="space-y-2">
-                    <Label className="text-foreground text-sm tracking-wide">Email</Label>
+                    <Label className="font-sans text-xs tracking-widest uppercase text-muted-foreground">Email</Label>
                     <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                      <Mail className="absolute left-0 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/50" />
                       <Input
                         type="email"
                         placeholder="your@email.com"
                         value={loginForm.email}
                         onChange={(e) => setLoginForm({ ...loginForm, email: e.target.value })}
-                        className="pl-10 h-12 bg-white border-border/50 focus:border-foreground rounded-none placeholder:text-xs"
+                        className="input-underline pl-6 h-12 font-sans placeholder:text-xs"
                         required
                         data-testid="login-email"
                       />
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-foreground text-sm tracking-wide">Password</Label>
+                    <Label className="font-sans text-xs tracking-widest uppercase text-muted-foreground">Password</Label>
                     <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                      <Lock className="absolute left-0 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/50" />
                       <Input
                         type="password"
                         placeholder="••••••••"
                         value={loginForm.password}
                         onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })}
-                        className="pl-10 h-12 bg-white border-border/50 focus:border-foreground rounded-none placeholder:text-xs"
+                        className="input-underline pl-6 h-12 font-sans placeholder:text-xs"
                         required
                         data-testid="login-password"
                       />
@@ -195,7 +187,7 @@ export default function AuthPage() {
                   <Button 
                     type="submit" 
                     disabled={isLoading}
-                    className="w-full bg-foreground hover:bg-foreground/90 h-12 rounded-none text-sm tracking-wide"
+                    className="w-full bg-foreground hover:bg-foreground/90 h-12 rounded-full font-sans text-sm tracking-wide btn-pill"
                     data-testid="login-submit"
                   >
                     {isLoading ? (
@@ -211,45 +203,45 @@ export default function AuthPage() {
               <TabsContent value="register" className="mt-8">
                 <form onSubmit={handleRegister} className="space-y-6">
                   <div className="space-y-2">
-                    <Label className="text-foreground text-sm tracking-wide">Name</Label>
+                    <Label className="font-sans text-xs tracking-widest uppercase text-muted-foreground">Name</Label>
                     <div className="relative">
-                      <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                      <User className="absolute left-0 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/50" />
                       <Input
                         type="text"
                         placeholder="Your name"
                         value={registerForm.name}
                         onChange={(e) => setRegisterForm({ ...registerForm, name: e.target.value })}
-                        className="pl-10 h-12 bg-white border-border/50 focus:border-foreground rounded-none placeholder:text-xs"
+                        className="input-underline pl-6 h-12 font-sans placeholder:text-xs"
                         required
                         data-testid="register-name"
                       />
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-foreground text-sm tracking-wide">Email</Label>
+                    <Label className="font-sans text-xs tracking-widest uppercase text-muted-foreground">Email</Label>
                     <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                      <Mail className="absolute left-0 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/50" />
                       <Input
                         type="email"
                         placeholder="your@email.com"
                         value={registerForm.email}
                         onChange={(e) => setRegisterForm({ ...registerForm, email: e.target.value })}
-                        className="pl-10 h-12 bg-white border-border/50 focus:border-foreground rounded-none placeholder:text-xs"
+                        className="input-underline pl-6 h-12 font-sans placeholder:text-xs"
                         required
                         data-testid="register-email"
                       />
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-foreground text-sm tracking-wide">Password</Label>
+                    <Label className="font-sans text-xs tracking-widest uppercase text-muted-foreground">Password</Label>
                     <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                      <Lock className="absolute left-0 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/50" />
                       <Input
                         type="password"
                         placeholder="••••••••"
                         value={registerForm.password}
                         onChange={(e) => setRegisterForm({ ...registerForm, password: e.target.value })}
-                        className="pl-10 h-12 bg-white border-border/50 focus:border-foreground rounded-none placeholder:text-xs"
+                        className="input-underline pl-6 h-12 font-sans placeholder:text-xs"
                         required
                         minLength={6}
                         data-testid="register-password"
@@ -261,20 +253,20 @@ export default function AuthPage() {
                       id="isHost" 
                       checked={isHost}
                       onCheckedChange={setIsHost}
-                      className="rounded-none"
+                      className="rounded-sm"
                       data-testid="host-checkbox"
                     />
                     <Label 
                       htmlFor="isHost" 
-                      className="text-sm text-muted-foreground cursor-pointer"
+                      className="text-sm text-muted-foreground cursor-pointer font-sans"
                     >
-                      I'm hosting a wedding (Bride/Groom)
+                      I'm hosting a wedding
                     </Label>
                   </div>
                   <Button 
                     type="submit" 
                     disabled={isLoading}
-                    className="w-full bg-foreground hover:bg-foreground/90 h-12 rounded-none text-sm tracking-wide"
+                    className="w-full bg-foreground hover:bg-foreground/90 h-12 rounded-full font-sans text-sm tracking-wide btn-pill"
                     data-testid="register-submit"
                   >
                     {isLoading ? (
