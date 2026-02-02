@@ -79,53 +79,56 @@ export default function LandingPage() {
         </header>
 
         {/* Main Content */}
-        <main className="flex-1 flex flex-col justify-center px-8 pb-32">
-          <div className="space-y-10 animate-fade-up text-center">
+        <main className="flex-1 flex flex-col justify-center px-8 pb-20">
+          <div className="space-y-8 animate-fade-up text-center">
             {/* Logo */}
-            <div className="flex justify-center">
-              <div className="w-48 h-48 md:w-56 md:h-56 rounded-full border border-border/40 flex items-center justify-center bg-white shadow-soft">
-                <img src={LOGO_URL} alt="aisle & after" className="h-36 md:h-44" />
+            <div className="flex justify-center mb-4">
+              <div className="w-44 h-44 md:w-52 md:h-52 rounded-full border border-border/30 flex items-center justify-center bg-white/80 shadow-soft">
+                <img src={LOGO_URL} alt="aisle & after" className="h-32 md:h-40" />
               </div>
             </div>
             
             {/* Headline */}
-            <div className="space-y-2">
-              <h1 className="font-serif text-3xl md:text-4xl text-foreground tracking-tight leading-[1.1]">
+            <div className="space-y-1 pt-2">
+              <h1 className="font-serif text-2xl md:text-3xl text-foreground tracking-tight leading-snug">
                 From celebrating love…
               </h1>
-              <p className="font-serif text-3xl md:text-4xl text-foreground/40 tracking-tight leading-[1.1]">
+              <p className="font-serif text-2xl md:text-3xl text-foreground/35 tracking-tight leading-snug">
                 to finding it after the aisle, maybe.
               </p>
             </div>
 
+            {/* Divider */}
+            <div className="w-12 h-px bg-border/60 mx-auto"></div>
+
             {/* Event Code Input */}
-            <div className="space-y-4 pt-4 max-w-xs mx-auto">
-              <p className="font-sans text-xs tracking-widest text-muted-foreground uppercase">
+            <div className="space-y-3 max-w-xs mx-auto">
+              <p className="font-sans text-[10px] tracking-[0.2em] text-muted-foreground/70 uppercase">
                 Introductions begin here
               </p>
-              <div className="flex gap-3">
+              <div className="flex gap-3 justify-center">
                 <Input
                   placeholder="Enter code"
                   value={eventCode}
                   onChange={(e) => setEventCode(e.target.value.toUpperCase())}
-                  className="input-underline h-14 text-lg tracking-[0.2em] uppercase font-sans placeholder:text-xs placeholder:tracking-normal placeholder:normal-case placeholder:text-muted-foreground/50 text-center"
+                  className="input-underline h-12 text-base tracking-[0.25em] uppercase font-sans placeholder:text-xs placeholder:tracking-normal placeholder:normal-case placeholder:text-muted-foreground/40 text-center w-40"
                   maxLength={6}
                   data-testid="event-code-input"
                 />
                 <Button 
                   onClick={handleJoinEvent}
                   disabled={isJoining}
-                  className="bg-foreground hover:bg-foreground/90 text-white h-14 px-6 rounded-full btn-pill"
+                  className="bg-foreground hover:bg-foreground/90 text-white h-12 w-12 rounded-full btn-pill p-0"
                   data-testid="join-event-btn"
                 >
                   {isJoining ? (
-                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                   ) : (
-                    <ArrowRight className="w-5 h-5" />
+                    <ArrowRight className="w-4 h-4" />
                   )}
                 </Button>
               </div>
-              <p className="font-sans text-sm text-muted-foreground">
+              <p className="font-sans text-xs text-muted-foreground/60">
                 Ask the couple for the code
               </p>
             </div>
