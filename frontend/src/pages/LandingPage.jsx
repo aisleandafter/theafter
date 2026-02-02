@@ -1,9 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Users, ArrowRight } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../components/ui/dialog';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import { toast } from 'sonner';
@@ -15,7 +14,6 @@ export default function LandingPage() {
   const navigate = useNavigate();
   const { user, updateUser } = useAuth();
   const [eventCode, setEventCode] = useState('');
-  const [showJoinDialog, setShowJoinDialog] = useState(false);
   const [isJoining, setIsJoining] = useState(false);
 
   const handleJoinEvent = async () => {
@@ -53,13 +51,13 @@ export default function LandingPage() {
   };
 
   return (
-    <div className="mobile-container relative overflow-hidden" data-testid="landing-page">
-      {/* Hero Background */}
+    <div className="mobile-container relative overflow-hidden noise-bg" data-testid="landing-page">
+      {/* Background Image */}
       <div className="absolute inset-0 z-0">
         <img 
-          src="https://images.unsplash.com/photo-1519741497674-611481863552?w=800&q=80"
-          alt="Wedding"
-          className="w-full h-full object-cover opacity-20"
+          src="https://images.unsplash.com/photo-1649898733721-a78888fe6165?w=800&q=80"
+          alt="Fashion couple"
+          className="w-full h-full object-cover opacity-10"
         />
         <div className="hero-overlay" />
       </div>
@@ -72,7 +70,7 @@ export default function LandingPage() {
             <Button 
               variant="ghost" 
               onClick={() => navigate(user.is_host ? '/admin' : '/discover')}
-              className="text-foreground hover:text-foreground/70 tracking-wide text-sm"
+              className="text-foreground/70 hover:text-foreground font-sans text-sm tracking-wide"
               data-testid="dashboard-btn"
             >
               Dashboard
@@ -81,26 +79,26 @@ export default function LandingPage() {
         </header>
 
         {/* Main Content */}
-        <main className="flex-1 flex flex-col justify-center px-8 pb-24">
-          <div className="space-y-10 animate-fade-in">
-            {/* Logo - Large & Centered */}
-            <div className="mb-8 text-center">
-              <img src={LOGO_URL} alt="aisle & after" className="h-48 md:h-56 mx-auto" />
+        <main className="flex-1 flex flex-col justify-center px-8 pb-32">
+          <div className="space-y-12 animate-fade-up">
+            {/* Logo */}
+            <div>
+              <img src={LOGO_URL} alt="aisle & after" className="h-48 md:h-56" />
             </div>
             
-            {/* Title */}
-            <div className="space-y-1">
-              <p className="text-2xl md:text-3xl text-foreground leading-snug">
+            {/* Headline */}
+            <div className="space-y-2">
+              <h1 className="font-serif text-4xl md:text-5xl text-foreground tracking-tight leading-[1.1]">
                 From celebrating love…
-              </p>
-              <p className="text-2xl md:text-3xl text-foreground/60 leading-snug">
+              </h1>
+              <p className="font-serif text-4xl md:text-5xl text-foreground/40 tracking-tight leading-[1.1]">
                 to finding it after the aisle, maybe.
               </p>
             </div>
 
             {/* Event Code Input */}
-            <div className="space-y-3 pt-4">
-              <p className="text-sm tracking-wide text-muted-foreground uppercase">
+            <div className="space-y-4 pt-4">
+              <p className="font-sans text-xs tracking-widest text-muted-foreground uppercase">
                 Introductions begin here
               </p>
               <div className="flex gap-3">
@@ -108,14 +106,14 @@ export default function LandingPage() {
                   placeholder="Enter code"
                   value={eventCode}
                   onChange={(e) => setEventCode(e.target.value.toUpperCase())}
-                  className="bg-white border-border/50 focus:border-foreground h-14 text-base tracking-[0.2em] uppercase placeholder:text-xs placeholder:tracking-normal placeholder:normal-case"
+                  className="input-underline h-14 text-lg tracking-[0.2em] uppercase font-sans placeholder:text-xs placeholder:tracking-normal placeholder:normal-case placeholder:text-muted-foreground/50"
                   maxLength={6}
                   data-testid="event-code-input"
                 />
                 <Button 
                   onClick={handleJoinEvent}
                   disabled={isJoining}
-                  className="bg-foreground hover:bg-foreground/90 text-white h-14 px-6 rounded-sm"
+                  className="bg-foreground hover:bg-foreground/90 text-white h-14 px-6 rounded-full btn-pill"
                   data-testid="join-event-btn"
                 >
                   {isJoining ? (
@@ -125,52 +123,25 @@ export default function LandingPage() {
                   )}
                 </Button>
               </div>
-              <p className="text-sm text-muted-foreground">
+              <p className="font-sans text-sm text-muted-foreground">
                 Ask the couple for the code
               </p>
             </div>
-
- 
           </div>
         </main>
 
         {/* Footer */}
-        <footer className="p-6 text-center">
+        <footer className="p-6">
           <Button 
             variant="ghost" 
             onClick={handleHostClick}
-            className="text-muted-foreground hover:text-foreground text-sm tracking-wide"
+            className="text-muted-foreground hover:text-foreground font-sans text-sm tracking-wide w-full justify-center"
             data-testid="host-wedding-btn"
           >
             Create your wedding event
           </Button>
         </footer>
       </div>
-
-      {/* Join Dialog */}
-      <Dialog open={showJoinDialog} onOpenChange={setShowJoinDialog}>
-        <DialogContent className="bg-white border-border">
-          <DialogHeader>
-            <DialogTitle className="text-2xl text-foreground tracking-tight">Join Wedding Event</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 pt-4">
-            <Input
-              placeholder="Enter 6-digit code"
-              value={eventCode}
-              onChange={(e) => setEventCode(e.target.value.toUpperCase())}
-              className="h-14 text-center text-2xl tracking-[0.5em]"
-              maxLength={6}
-            />
-            <Button 
-              onClick={handleJoinEvent}
-              disabled={isJoining}
-              className="w-full bg-foreground hover:bg-foreground/90 h-12"
-            >
-              {isJoining ? 'Joining...' : 'Join Event'}
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
