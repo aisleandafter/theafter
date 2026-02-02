@@ -1,4 +1,4 @@
-/* Global App Styles - aisle & after */
+/* Global App Styles - aisle & after - Tech Forward */
 
 .app-container {
     min-height: 100vh;
@@ -6,38 +6,29 @@
     position: relative;
 }
 
-/* Mobile-first container */
+/* Mobile container with subtle shadow */
 .mobile-container {
     max-width: 28rem;
     margin: 0 auto;
     min-height: 100vh;
     background-color: #ffffff;
     position: relative;
-    box-shadow: 0 0 60px -15px rgba(0, 0, 0, 0.08);
 }
 
-/* Profile card styles - Polaroid inspired */
+@media (min-width: 768px) {
+    .mobile-container {
+        box-shadow: 0 0 80px -20px rgba(0, 0, 0, 0.08);
+    }
+}
+
+/* Profile card - Editorial style */
 .profile-card {
     background: white;
-    padding: 1.5rem;
-    padding-bottom: 4rem;
-    box-shadow: 0 4px 30px -5px rgba(0, 0, 0, 0.08);
-    border: 1px solid #f0f0f0;
     position: relative;
+    overflow: hidden;
 }
 
-.profile-card::after {
-    content: '';
-    position: absolute;
-    bottom: 1.5rem;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 40%;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, #e0e0e0, transparent);
-}
-
-/* Swipe buttons - Minimal */
+/* Swipe buttons - Modern pill style */
 .swipe-btn {
     width: 4rem;
     height: 4rem;
@@ -45,11 +36,11 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .swipe-btn:hover {
-    transform: scale(1.05);
+    transform: scale(1.08);
 }
 
 .swipe-btn:active {
@@ -57,114 +48,153 @@
 }
 
 .swipe-btn-pass {
-    background: #ffffff;
+    background: #fafafa;
     border: 1px solid #e5e5e5;
-    color: #999;
+    color: #71717a;
 }
 
 .swipe-btn-pass:hover {
-    border-color: #ccc;
-    color: #666;
+    background: #f4f4f5;
+    color: #52525b;
 }
 
 .swipe-btn-like {
-    background: #1a1a1a;
+    background: #0a0a0a;
     color: white;
-    box-shadow: 0 4px 20px -4px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 8px 30px -8px rgba(0, 0, 0, 0.3);
 }
 
 .swipe-btn-like:hover {
-    background: #000;
+    background: #171717;
+    box-shadow: 0 12px 40px -10px rgba(0, 0, 0, 0.4);
 }
 
-/* Chat bubble styles */
+/* Chat bubbles - Modern minimal */
 .chat-bubble {
     max-width: 80%;
-    padding: 0.875rem 1.125rem;
+    padding: 1rem 1.25rem;
     position: relative;
 }
 
 .chat-bubble-sent {
-    background: #1a1a1a;
+    background: #0a0a0a;
     color: white;
-    border-radius: 1.25rem 1.25rem 0.25rem 1.25rem;
+    border-radius: 1.5rem 1.5rem 0.25rem 1.5rem;
     margin-left: auto;
 }
 
 .chat-bubble-received {
-    background: #f8f8f8;
-    color: #1a1a1a;
-    border: 1px solid #f0f0f0;
-    border-radius: 1.25rem 1.25rem 1.25rem 0.25rem;
+    background: #fafafa;
+    color: #0a0a0a;
+    border-radius: 1.5rem 1.5rem 1.5rem 0.25rem;
 }
 
-/* Interest tags - Minimal */
+/* Interest tags - Tech style */
 .interest-tag {
     display: inline-flex;
     padding: 0.5rem 1rem;
     background: #fafafa;
-    color: #1a1a1a;
-    border-radius: 0;
+    color: #0a0a0a;
+    border-radius: 9999px;
+    font-family: 'Inter', system-ui, sans-serif;
     font-size: 0.8125rem;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    border: 1px solid #f0f0f0;
+    font-weight: 500;
+    border: 1px solid #e5e5e5;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* Hero overlay */
+.interest-tag:hover {
+    background: #f4f4f5;
+    border-color: #d4d4d4;
+}
+
+/* Hero overlay - Fade */
 .hero-overlay {
     position: absolute;
     inset: 0;
     background: linear-gradient(to bottom, 
-        rgba(255,255,255,0.85) 0%, 
-        rgba(255,255,255,0.95) 60%,
+        rgba(255,255,255,0.9) 0%, 
+        rgba(255,255,255,0.95) 40%,
         rgba(255,255,255,1) 100%
-    );
-}
-
-/* Match celebration */
-.celebration-bg {
-    background: radial-gradient(circle at center, 
-        rgba(0,0,0,0.02) 0%, 
-        transparent 70%
     );
 }
 
 /* Navigation active state */
 .nav-item-active {
-    color: #1a1a1a;
+    color: #0a0a0a;
     position: relative;
 }
 
 .nav-item-active::after {
     content: '';
     position: absolute;
-    bottom: -0.375rem;
+    bottom: -6px;
     left: 50%;
     transform: translateX(-50%);
     width: 4px;
     height: 4px;
-    background: #1a1a1a;
+    background: #0a0a0a;
     border-radius: 50%;
 }
 
-/* Logo styling */
-.logo-img {
-    height: 28px;
-    width: auto;
-}
-
-/* Elegant divider */
-.elegant-divider {
-    display: flex;
-    align-items: center;
+/* Bento grid for dashboard */
+.bento-grid {
+    display: grid;
     gap: 1rem;
+    grid-template-columns: repeat(2, 1fr);
 }
 
-.elegant-divider::before,
-.elegant-divider::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, #e5e5e5, transparent);
+@media (min-width: 768px) {
+    .bento-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1.5rem;
+    }
+}
+
+/* Modern card hover */
+.card-modern {
+    background: white;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    border-radius: 1rem;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.card-modern:hover {
+    border-color: rgba(0, 0, 0, 0.1);
+    box-shadow: 0 20px 40px -20px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+/* Underline input style */
+.input-underline {
+    border: none;
+    border-bottom: 1px solid #e5e5e5;
+    border-radius: 0;
+    background: transparent;
+    padding-left: 0;
+    padding-right: 0;
+    transition: border-color 0.2s ease;
+}
+
+.input-underline:focus {
+    border-bottom-color: #0a0a0a;
+    box-shadow: none;
+    outline: none;
+}
+
+/* Button pill style */
+.btn-pill {
+    border-radius: 9999px;
+    font-family: 'Inter', system-ui, sans-serif;
+    font-weight: 500;
+    letter-spacing: 0.025em;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-pill:hover {
+    transform: scale(1.02);
+}
+
+.btn-pill:active {
+    transform: scale(0.98);
 }
