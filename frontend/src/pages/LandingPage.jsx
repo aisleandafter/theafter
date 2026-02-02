@@ -90,16 +90,16 @@ export default function LandingPage() {
             
             {/* Headline */}
             <div className="space-y-2">
-              <h1 className="font-serif text-4xl md:text-5xl text-foreground tracking-tight leading-[1.1]">
+              <h1 className="font-serif text-3xl md:text-4xl text-foreground tracking-tight leading-[1.1]">
                 From celebrating love…
               </h1>
-              <p className="font-serif text-4xl md:text-5xl text-foreground/40 tracking-tight leading-[1.1]">
+              <p className="font-serif text-3xl md:text-4xl text-foreground/40 tracking-tight leading-[1.1]">
                 to finding it after the aisle, maybe.
               </p>
             </div>
 
             {/* Event Code Input */}
-            <div className="space-y-4 pt-4">
+            <div className="space-y-4 pt-4 max-w-xs mx-auto">
               <p className="font-sans text-xs tracking-widest text-muted-foreground uppercase">
                 Introductions begin here
               </p>
@@ -108,7 +108,7 @@ export default function LandingPage() {
                   placeholder="Enter code"
                   value={eventCode}
                   onChange={(e) => setEventCode(e.target.value.toUpperCase())}
-                  className="input-underline h-14 text-lg tracking-[0.2em] uppercase font-sans placeholder:text-xs placeholder:tracking-normal placeholder:normal-case placeholder:text-muted-foreground/50"
+                  className="input-underline h-14 text-lg tracking-[0.2em] uppercase font-sans placeholder:text-xs placeholder:tracking-normal placeholder:normal-case placeholder:text-muted-foreground/50 text-center"
                   maxLength={6}
                   data-testid="event-code-input"
                 />
