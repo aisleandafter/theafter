@@ -90,16 +90,16 @@ export default function ProfileSetup() {
     switch (step) {
       case 1:
         return (
-          <div className="space-y-8 animate-fade-in">
-            <div className="text-center space-y-2">
-              <h2 className="text-2xl text-foreground tracking-tight">Your Photo</h2>
-              <p className="text-muted-foreground text-sm">Add a photo so guests can recognize you</p>
+          <div className="space-y-8 animate-fade-up">
+            <div className="space-y-2">
+              <h2 className="font-serif text-3xl text-foreground tracking-tight">Your Photo</h2>
+              <p className="font-sans text-sm text-muted-foreground">Add a photo so guests can recognize you</p>
             </div>
 
             {/* Photo Upload */}
-            <div className="flex justify-center">
+            <div className="flex justify-center py-4">
               <label className="relative cursor-pointer group">
-                <div className="w-36 h-36 border border-dashed border-border flex items-center justify-center overflow-hidden bg-muted/20 transition-colors group-hover:border-foreground/30">
+                <div className="w-40 h-40 rounded-full border-2 border-dashed border-border flex items-center justify-center overflow-hidden bg-muted/30 transition-all group-hover:border-foreground/30">
                   {profile.photo_url ? (
                     <img 
                       src={profile.photo_url} 
@@ -107,11 +107,11 @@ export default function ProfileSetup() {
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <Camera className="w-8 h-8 text-muted-foreground/50" />
+                    <Camera className="w-10 h-10 text-muted-foreground/30" />
                   )}
                 </div>
-                <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-foreground flex items-center justify-center">
-                  <Camera className="w-4 h-4 text-white" />
+                <div className="absolute -bottom-1 -right-1 w-10 h-10 bg-foreground rounded-full flex items-center justify-center shadow-medium">
+                  <Camera className="w-5 h-5 text-white" />
                 </div>
                 <input 
                   type="file" 
@@ -126,13 +126,13 @@ export default function ProfileSetup() {
             {/* Basic Info */}
             <div className="space-y-6">
               <div className="space-y-2">
-                <Label className="text-foreground text-sm tracking-wide">Age *</Label>
+                <Label className="font-sans text-xs tracking-widest uppercase text-muted-foreground">Age *</Label>
                 <Input
                   type="number"
                   placeholder="Your age"
                   value={profile.age}
                   onChange={(e) => setProfile({ ...profile, age: e.target.value })}
-                  className="h-12 bg-white border-border/50 focus:border-foreground rounded-none placeholder:text-xs"
+                  className="input-underline h-12 font-sans placeholder:text-xs"
                   min={18}
                   max={100}
                   required
@@ -141,12 +141,12 @@ export default function ProfileSetup() {
               </div>
 
               <div className="space-y-2">
-                <Label className="text-foreground text-sm tracking-wide">Interested in *</Label>
+                <Label className="font-sans text-xs tracking-widest uppercase text-muted-foreground">Interested in *</Label>
                 <Select 
                   value={profile.looking_for} 
                   onValueChange={(val) => setProfile({ ...profile, looking_for: val })}
                 >
-                  <SelectTrigger className="h-12 bg-white border-border/50 rounded-none" data-testid="looking-for-select">
+                  <SelectTrigger className="h-12 bg-transparent border-0 border-b border-input rounded-none px-0 font-sans focus:ring-0" data-testid="looking-for-select">
                     <SelectValue placeholder="Select preference" />
                   </SelectTrigger>
                   <SelectContent>
@@ -162,35 +162,35 @@ export default function ProfileSetup() {
 
       case 2:
         return (
-          <div className="space-y-8 animate-fade-in">
-            <div className="text-center space-y-2">
-              <h2 className="text-2xl text-foreground tracking-tight">About You</h2>
-              <p className="text-muted-foreground text-sm">A few details to start a conversation</p>
+          <div className="space-y-8 animate-fade-up">
+            <div className="space-y-2">
+              <h2 className="font-serif text-3xl text-foreground tracking-tight">About You</h2>
+              <p className="font-sans text-sm text-muted-foreground">A few details to start a conversation</p>
             </div>
 
             <div className="space-y-6">
               <div className="space-y-2">
-                <Label className="text-foreground text-sm tracking-wide">About you</Label>
+                <Label className="font-sans text-xs tracking-widest uppercase text-muted-foreground">About you</Label>
                 <Textarea
                   placeholder="A little about you: interests, energy, or what brings you here."
                   value={profile.bio}
                   onChange={(e) => setProfile({ ...profile, bio: e.target.value })}
-                  className="bg-white border-border/50 focus:border-foreground min-h-[100px] resize-none rounded-none placeholder:text-xs"
+                  className="bg-transparent border-0 border-b border-input rounded-none px-0 font-sans min-h-[100px] resize-none focus:ring-0 placeholder:text-xs"
                   maxLength={200}
                   data-testid="bio-input"
                 />
-                <p className="text-xs text-muted-foreground text-right">
+                <p className="text-xs text-muted-foreground text-right font-sans">
                   {profile.bio.length}/200
                 </p>
               </div>
 
               <div className="space-y-2">
-                <Label className="text-foreground text-sm tracking-wide">How do you know the couple?</Label>
+                <Label className="font-sans text-xs tracking-widest uppercase text-muted-foreground">How do you know the couple?</Label>
                 <Select 
                   value={profile.relationship_to_couple} 
                   onValueChange={(val) => setProfile({ ...profile, relationship_to_couple: val })}
                 >
-                  <SelectTrigger className="h-12 bg-white border-border/50 rounded-none" data-testid="relationship-select">
+                  <SelectTrigger className="h-12 bg-transparent border-0 border-b border-input rounded-none px-0 font-sans focus:ring-0" data-testid="relationship-select">
                     <SelectValue placeholder="Select relationship" />
                   </SelectTrigger>
                   <SelectContent>
@@ -202,12 +202,12 @@ export default function ProfileSetup() {
               </div>
 
               <div className="space-y-2">
-                <Label className="text-foreground text-sm tracking-wide">Fun fact about you</Label>
+                <Label className="font-sans text-xs tracking-widest uppercase text-muted-foreground">Fun fact about you</Label>
                 <Input
                   placeholder="Something people wouldn't guess about you"
                   value={profile.fun_fact}
                   onChange={(e) => setProfile({ ...profile, fun_fact: e.target.value })}
-                  className="h-12 bg-white border-border/50 focus:border-foreground rounded-none placeholder:text-xs"
+                  className="input-underline h-12 font-sans placeholder:text-xs"
                   maxLength={100}
                   data-testid="fun-fact-input"
                 />
@@ -218,33 +218,33 @@ export default function ProfileSetup() {
 
       case 3:
         return (
-          <div className="space-y-8 animate-fade-in">
-            <div className="text-center space-y-2">
-              <h2 className="text-2xl text-foreground tracking-tight">Your Interests</h2>
-              <p className="text-muted-foreground text-sm">Select up to 5 interests</p>
+          <div className="space-y-8 animate-fade-up">
+            <div className="space-y-2">
+              <h2 className="font-serif text-3xl text-foreground tracking-tight">Your Interests</h2>
+              <p className="font-sans text-sm text-muted-foreground">Select up to 5 interests</p>
             </div>
 
-            <div className="flex flex-wrap gap-2 justify-center">
+            <div className="flex flex-wrap gap-2">
               {INTERESTS.map(interest => (
-                <Badge
+                <button
                   key={interest}
-                  variant="outline"
+                  type="button"
                   className={`
-                    cursor-pointer px-4 py-2 text-sm font-normal tracking-normal transition-colors rounded-none font-serif
+                    px-4 py-2.5 rounded-full font-serif text-sm transition-all duration-200
                     ${profile.interests.includes(interest) 
-                      ? 'bg-foreground text-white border-foreground hover:bg-foreground/90' 
-                      : 'bg-white text-foreground hover:bg-muted/50 border-border'
+                      ? 'bg-foreground text-white' 
+                      : 'bg-muted/50 text-foreground hover:bg-muted'
                     }
                   `}
                   onClick={() => toggleInterest(interest)}
                   data-testid={`interest-${interest.toLowerCase().replace(/\s+/g, '-')}`}
                 >
                   {interest}
-                </Badge>
+                </button>
               ))}
             </div>
 
-            <p className="text-center text-sm text-muted-foreground">
+            <p className="text-center font-sans text-sm text-muted-foreground">
               {profile.interests.length}/5 selected
             </p>
           </div>
@@ -256,18 +256,18 @@ export default function ProfileSetup() {
   };
 
   return (
-    <div className="mobile-container min-h-screen bg-white relative" data-testid="profile-setup-page">
+    <div className="mobile-container min-h-screen bg-white relative noise-bg" data-testid="profile-setup-page">
       {/* Header */}
       <header className="p-6 flex justify-between items-center">
         <img src={LOGO_URL} alt="aisle & after" className="h-12" />
-        <span className="text-sm text-muted-foreground tracking-wide">Step {step}/3</span>
+        <span className="font-sans text-sm text-muted-foreground">Step {step}/3</span>
       </header>
 
       {/* Progress Bar */}
       <div className="px-6">
-        <div className="h-px bg-border">
+        <div className="h-0.5 bg-muted rounded-full overflow-hidden">
           <div 
-            className="h-full bg-foreground transition-all duration-300"
+            className="h-full bg-foreground transition-all duration-500 ease-apple"
             style={{ width: `${(step / 3) * 100}%` }}
           />
         </div>
@@ -285,7 +285,7 @@ export default function ProfileSetup() {
             <Button
               variant="outline"
               onClick={() => setStep(s => s - 1)}
-              className="flex-1 h-12 rounded-none border-border bg-white"
+              className="flex-1 h-12 rounded-full font-sans"
               data-testid="back-step-btn"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
@@ -296,7 +296,7 @@ export default function ProfileSetup() {
           {step < 3 ? (
             <Button
               onClick={() => setStep(s => s + 1)}
-              className="flex-1 h-12 rounded-none bg-foreground hover:bg-foreground/90"
+              className="flex-1 h-12 rounded-full bg-foreground hover:bg-foreground/90 font-sans btn-pill"
               data-testid="next-step-btn"
             >
               Next
@@ -306,7 +306,7 @@ export default function ProfileSetup() {
             <Button
               onClick={handleSubmit}
               disabled={isLoading}
-              className="flex-1 h-12 rounded-none bg-foreground hover:bg-foreground/90"
+              className="flex-1 h-12 rounded-full bg-foreground hover:bg-foreground/90 font-sans btn-pill"
               data-testid="complete-profile-btn"
             >
               {isLoading ? (
