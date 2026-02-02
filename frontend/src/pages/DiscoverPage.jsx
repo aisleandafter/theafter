@@ -70,16 +70,16 @@ export default function DiscoverPage() {
   };
 
   return (
-    <div className="mobile-container min-h-screen bg-white relative" data-testid="discover-page">
+    <div className="mobile-container min-h-screen bg-white relative noise-bg" data-testid="discover-page">
       {/* Header */}
-      <header className="p-4 flex justify-between items-center sticky top-0 bg-white/90 backdrop-blur z-20 border-b border-border/50">
+      <header className="p-4 flex justify-between items-center sticky top-0 glass-header z-20">
         <img src={LOGO_URL} alt="aisle & after" className="h-10" />
         <div className="flex items-center gap-1">
           <Button
             variant="ghost"
             size="sm"
             onClick={() => navigate('/matches')}
-            className="text-foreground/70 hover:text-foreground"
+            className="text-foreground/60 hover:text-foreground"
             data-testid="matches-btn"
           >
             <MessageCircle className="w-5 h-5" />
@@ -88,7 +88,7 @@ export default function DiscoverPage() {
             variant="ghost"
             size="sm"
             onClick={handleLogout}
-            className="text-muted-foreground hover:text-foreground"
+            className="text-foreground/60 hover:text-foreground"
             data-testid="logout-btn"
           >
             <LogOut className="w-5 h-5" />
@@ -97,15 +97,15 @@ export default function DiscoverPage() {
       </header>
 
       {/* Main Content */}
-      <main className="p-4 pb-32">
+      <main className="p-4 pb-36">
         {isLoading ? (
           <div className="h-[500px] flex items-center justify-center">
-            <div className="w-8 h-8 border border-foreground border-t-transparent rounded-full animate-spin" />
+            <div className="w-8 h-8 border-2 border-foreground/20 border-t-foreground rounded-full animate-spin" />
           </div>
         ) : currentProfile ? (
-          <div className={`profile-card card-hover ${swipeClass}`} data-testid="profile-card">
+          <div className={`profile-card card-modern overflow-hidden ${swipeClass}`} data-testid="profile-card">
             {/* Profile Image */}
-            <div className="aspect-[3/4] overflow-hidden bg-muted mb-6 relative">
+            <div className="aspect-[3/4] overflow-hidden bg-muted relative">
               {currentProfile.photo_url ? (
                 <img 
                   src={currentProfile.photo_url} 
@@ -113,64 +113,67 @@ export default function DiscoverPage() {
                   className="w-full h-full object-cover"
                 />
               ) : (
-                <div className="w-full h-full flex items-center justify-center bg-muted/50">
-                  <User className="w-20 h-20 text-muted-foreground/30" />
+                <div className="w-full h-full flex items-center justify-center bg-muted">
+                  <User className="w-20 h-20 text-muted-foreground/20" />
                 </div>
               )}
               
               {/* Name Overlay */}
               <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/70 via-black/30 to-transparent">
-                <h2 className="text-2xl text-white tracking-tight">
+                <h2 className="font-serif text-3xl text-white tracking-tight">
                   {currentProfile.name}, {currentProfile.age}
                 </h2>
                 {currentProfile.relationship_to_couple && (
-                  <p className="text-white/70 text-sm tracking-wide">{currentProfile.relationship_to_couple}</p>
+                  <p className="font-sans text-sm text-white/70 mt-1">{currentProfile.relationship_to_couple}</p>
                 )}
               </div>
             </div>
 
-            {/* Bio */}
-            {currentProfile.bio && (
-              <p className="text-foreground mb-6 leading-relaxed">{currentProfile.bio}</p>
-            )}
+            {/* Profile Details */}
+            <div className="p-6 space-y-4">
+              {/* Bio */}
+              {currentProfile.bio && (
+                <p className="font-serif text-lg text-foreground leading-relaxed">{currentProfile.bio}</p>
+              )}
 
-            {/* Fun Fact */}
-            {currentProfile.fun_fact && (
-              <div className="bg-muted/30 p-4 mb-6 border-l-2 border-foreground/20">
-                <p className="text-sm text-foreground/80 italic">
-                  "{currentProfile.fun_fact}"
-                </p>
-              </div>
-            )}
+              {/* Fun Fact */}
+              {currentProfile.fun_fact && (
+                <div className="bg-muted/50 p-4 rounded-lg border-l-2 border-foreground/10">
+                  <p className="font-serif text-foreground/70 italic">
+                    "{currentProfile.fun_fact}"
+                  </p>
+                </div>
+              )}
 
-            {/* Interests */}
-            {currentProfile.interests?.length > 0 && (
-              <div className="flex flex-wrap gap-2">
-                {currentProfile.interests.map(interest => (
-                  <span 
-                    key={interest}
-                    className="interest-tag"
-                  >
-                    {interest}
-                  </span>
-                ))}
-              </div>
-            )}
+              {/* Interests */}
+              {currentProfile.interests?.length > 0 && (
+                <div className="flex flex-wrap gap-2 pt-2">
+                  {currentProfile.interests.map(interest => (
+                    <span 
+                      key={interest}
+                      className="interest-tag"
+                    >
+                      {interest}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         ) : (
           <div className="h-[500px] flex flex-col items-center justify-center text-center px-4">
-            <div className="w-16 h-16 border border-border flex items-center justify-center mb-6">
-              <svg className="w-8 h-8 text-foreground/30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+            <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-6">
+              <svg className="w-8 h-8 text-muted-foreground/40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                 <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
               </svg>
             </div>
-            <h3 className="text-xl text-foreground mb-2 tracking-tight">No More Profiles</h3>
-            <p className="text-muted-foreground text-sm mb-6">
+            <h3 className="font-serif text-2xl text-foreground mb-2">No More Profiles</h3>
+            <p className="font-sans text-sm text-muted-foreground mb-6">
               You've seen everyone at this event. Check back later.
             </p>
             <Button
               onClick={() => navigate('/matches')}
-              className="bg-foreground hover:bg-foreground/90 rounded-none"
+              className="bg-foreground hover:bg-foreground/90 rounded-full btn-pill"
               data-testid="view-matches-btn"
             >
               View Your Matches
@@ -205,26 +208,26 @@ export default function DiscoverPage() {
 
       {/* Match Dialog */}
       <Dialog open={showMatch} onOpenChange={setShowMatch}>
-        <DialogContent className="bg-white border-border max-w-sm mx-4 celebration-bg">
+        <DialogContent className="bg-white border-0 shadow-elevated max-w-sm mx-4 rounded-2xl">
           <div className="text-center space-y-8 py-6">
             <div className="match-animation">
-              <div className="w-20 h-20 mx-auto border border-foreground flex items-center justify-center">
-                <svg className="w-10 h-10 text-foreground" viewBox="0 0 24 24" fill="currentColor">
+              <div className="w-20 h-20 mx-auto bg-foreground rounded-full flex items-center justify-center">
+                <svg className="w-10 h-10 text-white" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
                 </svg>
               </div>
             </div>
             
             <div className="space-y-2">
-              <h2 className="text-3xl text-foreground tracking-tight">It's a Match</h2>
-              <p className="text-muted-foreground">
+              <h2 className="font-serif text-4xl text-foreground tracking-tight">It's a Match</h2>
+              <p className="font-sans text-muted-foreground">
                 You and {matchedUser?.name} liked each other
               </p>
             </div>
 
-            <div className="flex justify-center gap-4">
+            <div className="flex justify-center">
               {matchedUser?.photo_url ? (
-                <div className="w-20 h-20 overflow-hidden border border-border">
+                <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-muted">
                   <img 
                     src={matchedUser.photo_url} 
                     alt={matchedUser.name}
@@ -232,17 +235,17 @@ export default function DiscoverPage() {
                   />
                 </div>
               ) : (
-                <div className="w-20 h-20 bg-muted/30 flex items-center justify-center border border-border">
-                  <User className="w-8 h-8 text-muted-foreground/50" />
+                <div className="w-24 h-24 rounded-full bg-muted flex items-center justify-center">
+                  <User className="w-10 h-10 text-muted-foreground/30" />
                 </div>
               )}
             </div>
 
-            <div className="flex gap-3">
+            <div className="flex gap-3 pt-4">
               <Button
                 variant="outline"
                 onClick={() => setShowMatch(false)}
-                className="flex-1 border-border rounded-none"
+                className="flex-1 rounded-full h-12 font-sans"
                 data-testid="keep-swiping-btn"
               >
                 Keep Swiping
@@ -252,7 +255,7 @@ export default function DiscoverPage() {
                   setShowMatch(false);
                   navigate('/matches');
                 }}
-                className="flex-1 bg-foreground hover:bg-foreground/90 rounded-none"
+                className="flex-1 bg-foreground hover:bg-foreground/90 rounded-full h-12 font-sans"
                 data-testid="send-message-btn"
               >
                 Send Message
@@ -263,7 +266,7 @@ export default function DiscoverPage() {
       </Dialog>
 
       {/* Bottom Nav */}
-      <nav className="fixed bottom-24 left-1/2 -translate-x-1/2 bg-white/90 backdrop-blur border border-border px-8 py-3 z-10">
+      <nav className="fixed bottom-28 left-1/2 -translate-x-1/2 bg-white/90 backdrop-blur-xl border border-border/40 rounded-full px-8 py-3 shadow-medium z-10">
         <div className="flex items-center gap-8">
           <button 
             className="nav-item-active p-2"
@@ -275,14 +278,14 @@ export default function DiscoverPage() {
             </svg>
           </button>
           <button 
-            className="p-2 text-muted-foreground hover:text-foreground"
+            className="p-2 text-muted-foreground hover:text-foreground transition-colors"
             onClick={() => navigate('/matches')}
             data-testid="nav-matches"
           >
             <MessageCircle className="w-5 h-5" />
           </button>
           <button 
-            className="p-2 text-muted-foreground hover:text-foreground"
+            className="p-2 text-muted-foreground hover:text-foreground transition-colors"
             onClick={() => navigate('/profile-setup')}
             data-testid="nav-profile"
           >
