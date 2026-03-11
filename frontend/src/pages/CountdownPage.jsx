@@ -97,8 +97,8 @@ export default function CountdownPage() {
     <div className="mobile-container min-h-screen bg-white noise-bg" data-testid="countdown-page">
       {/* Header */}
       <header className="p-6 flex justify-center">
-        <div className="w-28 h-28 rounded-full border border-border/30 flex items-center justify-center bg-white/80 shadow-soft">
-          <img src={LOGO_URL} alt="aisle & after" className="h-24" />
+        <div className="w-20 h-20 rounded-full border border-border/30 flex items-center justify-center bg-white/80 shadow-soft">
+          <img src={LOGO_URL} alt="aisle & after" className="h-16" />
         </div>
       </header>
 

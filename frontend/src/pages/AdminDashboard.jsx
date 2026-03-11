@@ -230,7 +230,7 @@ export default function AdminDashboard() {
     <div className="mobile-container min-h-screen bg-white noise-bg" data-testid="admin-dashboard">
       {/* Header */}
       <header className="p-4 flex justify-between items-center sticky top-0 glass-header z-20">
-        <img src={LOGO_URL} alt="aisle & after" className="h-10" />
+        <img src={LOGO_URL} alt="aisle & after" className="h-7" />
         <Button
           variant="ghost"
           onClick={handleLogout}

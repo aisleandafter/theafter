@@ -53,7 +53,7 @@ export default function MatchesPage() {
         >
           <ArrowLeft className="w-5 h-5" />
         </Button>
-        <img src={LOGO_URL} alt="aisle & after" className="h-10" />
+        <img src={LOGO_URL} alt="aisle & after" className="h-7" />
       </header>
 
       {/* Content */}

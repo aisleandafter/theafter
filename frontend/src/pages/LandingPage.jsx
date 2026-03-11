@@ -83,8 +83,8 @@ export default function LandingPage() {
           <div className="space-y-8 animate-fade-up text-center">
             {/* Logo */}
             <div className="flex justify-center mb-4">
-              <div className="w-52 h-52 md:w-60 md:h-60 rounded-full border border-border/30 flex items-center justify-center bg-white/80 shadow-soft">
-                <img src={LOGO_URL} alt="aisle & after" className="h-44 md:h-52" />
+              <div className="w-36 h-36 md:w-40 md:h-40 rounded-full border border-border/30 flex items-center justify-center bg-white/80 shadow-soft">
+                <img src={LOGO_URL} alt="aisle & after" className="h-28 md:h-32" />
               </div>
             </div>
             

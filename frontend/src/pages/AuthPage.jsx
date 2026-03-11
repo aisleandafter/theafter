@@ -121,7 +121,7 @@ export default function AuthPage() {
           <div className="space-y-10 animate-fade-up">
             {/* Logo */}
             <div className="space-y-6">
-              <img src={LOGO_URL} alt="aisle & after" className="h-16" />
+              <img src={LOGO_URL} alt="aisle & after" className="h-12" />
               <div className="space-y-1">
                 <h1 className="font-serif text-3xl text-foreground tracking-tight">
                   {isHost ? 'Host Dashboard' : 'Welcome'}
