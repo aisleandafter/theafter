@@ -639,7 +639,7 @@ async def discover_profiles(user = Depends(get_current_user)):
         raise HTTPException(status_code=400, detail="Join an event first")
     
     # Get users already swiped on
-    swiped = await db.swipes.find({"swiper_id": user["id"]}).to_list(1000)
+    swiped = await db.swipes.find({"swiper_id": user["id"]}, {"_id": 0, "target_id": 1}).to_list(1000)
     swiped_ids = [s["target_id"] for s in swiped]
     swiped_ids.append(user["id"])  # Exclude self
     
@@ -742,22 +742,30 @@ async def get_matches(user = Depends(get_current_user)):
     }, {"_id": 0}).to_list(100)
     
     result = []
+    # Batch fetch users and last messages to avoid N+1 queries
+    other_ids = [
+        match["user2_id"] if match["user1_id"] == user["id"] else match["user1_id"]
+        for match in matches
+    ]
+    match_ids = [m["id"] for m in matches]
+    
+    users_list = await db.users.find({"id": {"$in": other_ids}}, {"_id": 0, "password": 0}).to_list(len(other_ids))
+    users_map = {u["id"]: u for u in users_list}
+    
+    last_msgs = await db.messages.aggregate([
+        {"$match": {"match_id": {"$in": match_ids}}},
+        {"$sort": {"created_at": -1}},
+        {"$group": {"_id": "$match_id", "doc": {"$first": "$$ROOT"}}}
+    ]).to_list(len(match_ids))
+    msgs_map = {m["_id"]: {k: v for k, v in m["doc"].items() if k != "_id"} for m in last_msgs}
+    
     for match in matches:
         other_id = match["user2_id"] if match["user1_id"] == user["id"] else match["user1_id"]
-        other_user = await db.users.find_one({"id": other_id}, {"_id": 0, "password": 0})
-        
-        # Get last message
-        last_msg = await db.messages.find_one(
-            {"match_id": match["id"]},
-            {"_id": 0},
-            sort=[("created_at", -1)]
-        )
-        
         result.append({
             "match_id": match["id"],
-            "matched_user": other_user,
+            "matched_user": users_map.get(other_id),
             "created_at": match["created_at"],
-            "last_message": last_msg
+            "last_message": msgs_map.get(match["id"])
         })
     
     return {"matches": result}
@@ -961,14 +969,18 @@ async def get_live_stats(user=Depends(get_current_user)):
         {"_id": 0}
     ).to_list(100)
 
-    # Get first names of recent matches (last 5)
+    # Batch fetch names for recent matches
     recent_match_names = []
-    for m in today_matches[-5:]:
-        u1 = await db.users.find_one({"id": m["user1_id"]}, {"_id": 0, "name": 1})
-        u2 = await db.users.find_one({"id": m["user2_id"]}, {"_id": 0, "name": 1})
-        if u1 and u2:
-            n1 = u1.get("name", "Guest").split()[0]
-            n2 = u2.get("name", "Guest").split()[0]
+    recent = today_matches[-5:]
+    if recent:
+        all_user_ids = list(set(
+            [m["user1_id"] for m in recent] + [m["user2_id"] for m in recent]
+        ))
+        name_docs = await db.users.find({"id": {"$in": all_user_ids}}, {"_id": 0, "id": 1, "name": 1}).to_list(len(all_user_ids))
+        name_map = {u["id"]: u.get("name", "Guest").split()[0] for u in name_docs}
+        for m in recent:
+            n1 = name_map.get(m["user1_id"], "Guest")
+            n2 = name_map.get(m["user2_id"], "Guest")
             recent_match_names.append(f"{n1} & {n2}")
 
     return {
@@ -994,7 +1006,7 @@ async def bouquet_toss(user=Depends(get_current_user)):
     existing_matches = await db.matches.find({
         "event_id": event_id,
         "$or": [{"user1_id": user["id"]}, {"user2_id": user["id"]}]
-    }).to_list(1000)
+    }, {"_id": 0, "user1_id": 1, "user2_id": 1}).to_list(1000)
     matched_ids = set()
     for m in existing_matches:
         matched_ids.add(m["user1_id"])
