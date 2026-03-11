@@ -28,28 +28,34 @@ Build a dating experience that matches the single guests of the bride and groom.
 - [x] Wedding Day Mode detection (auto-activates on wedding date)
 - [x] Live activity stats (guests, matches, today's matches, recent match names)
 - [x] Bouquet Toss random matching (one-time per guest per event)
+- [x] Public countdown endpoint (no auth required)
+- [x] WebSocket real-time chat (broadcast on message send)
 
 ### Frontend (React + Tailwind + Shadcn UI)
-- [x] Landing page with event code entry (circular logo, serif headlines)
+- [x] Landing page with event code entry
 - [x] Auth pages (login/register for host/guest)
 - [x] Profile setup wizard (3 steps)
 - [x] Discover/swipe page with card animations
 - [x] Matches list (rounded cards, floating nav)
-- [x] Chat interface with AI suggestion button
-- [x] Admin dashboard (payment, event creation, stats)
+- [x] Chat interface with AI suggestion button + WebSocket live updates
+- [x] Admin dashboard (payment, event creation, stats, live activity)
 - [x] Consistent "tech-forward" design across all pages
 - [x] Live stats bar on Discover page
-- [x] Bouquet Toss button with one-time use enforcement
+- [x] Bouquet Toss with one-time use
 - [x] Confetti animation on wedding day matches
-- [x] Wedding Day banner (auto-shows on wedding date)
-- [x] Live Activity card on Admin Dashboard
-- [x] Recent match names on Admin Dashboard
+- [x] Wedding Day banner
+- [x] Countdown page (/countdown/:eventCode) - shareable, public
+- [x] Share countdown link from admin dashboard
 
-### Design
-- Brand: "aisle & after"
-- Aesthetic: White, minimalist, tech-forward
-- Fonts: Times New Roman (serif) + Inter (sans)
-- Pattern: glass-header, card-modern, noise-bg, btn-pill, floating pill nav
+### Key Routes
+- / - Landing page
+- /countdown/:eventCode - Public wedding countdown (shareable)
+- /auth - Login/register
+- /profile-setup - Guest profile wizard
+- /discover - Swipe/match
+- /matches - Match list
+- /chat/:matchId - Chat with WebSocket
+- /admin - Host dashboard
 
 ## Tech Stack
 - Frontend: React, Tailwind CSS, Shadcn UI
@@ -58,27 +64,26 @@ Build a dating experience that matches the single guests of the bride and groom.
 - AI: Anthropic Claude Sonnet 4.5 (official SDK)
 - Payments: Stripe (via emergentintegrations)
 - Auth: JWT
+- Real-time: WebSocket (native FastAPI)
 
 ## Key API Endpoints
 - POST /api/auth/register, /api/auth/login, GET /api/auth/me
 - POST /api/payments/checkout, GET /api/payments/status/{session_id}, GET /api/payments/check
 - POST /api/events/create, /api/events/join, GET /api/events/current, GET /api/events/{id}/stats
 - GET /api/events/wedding-day-mode, GET /api/events/live-stats
+- GET /api/countdown/{event_code} (PUBLIC)
 - PUT /api/profile, GET /api/profile/{user_id}
 - GET /api/discover, POST /api/swipe
 - POST /api/bouquet-toss
 - GET /api/matches
 - GET /api/chat/{match_id}, POST /api/chat/send
+- WS /ws/chat/{match_id}?token={jwt}
 - POST /api/ai/conversation-starters, POST /api/ai/compatibility
-
-## DB Collections
-- users, events, swipes, matches, messages, payment_transactions, bouquet_tosses
 
 ## Prioritized Backlog
 
 ### P1 (High)
-- [ ] Real-time chat updates (WebSocket)
-- [ ] Image upload to cloud storage
+- [ ] Image upload to cloud storage (profile photos)
 - [ ] Push notifications for new matches
 
 ### P2 (Medium)
@@ -100,7 +105,9 @@ Build a dating experience that matches the single guests of the bride and groom.
 - Host: testhost@demo.com / demo123
 
 ## Notes
-- Anthropic API key integrated but requires credits for AI generation (falls back gracefully)
+- Anthropic API key integrated, requires account credits for AI generation (graceful fallback to pre-written starters)
 - Stripe checkout opens in new tab to avoid preview environment issues
 - Wedding Day Mode auto-activates when today matches event's wedding_date
-- Bouquet Toss enforced as one-time per guest per event (stored in bouquet_tosses collection)
+- Bouquet Toss enforced one-time per guest per event
+- WebSocket reconnects automatically on disconnect (3s delay)
+- Countdown page is fully public/shareable, no auth needed
