@@ -16,6 +16,7 @@ from datetime import datetime, timezone, date
 import jwt
 import bcrypt
 import anthropic
+import qrcode
 from io import BytesIO
 from PIL import Image
 from emergentintegrations.payments.stripe.checkout import StripeCheckout, CheckoutSessionResponse, CheckoutStatusResponse, CheckoutSessionRequest
@@ -1081,6 +1082,29 @@ async def get_countdown(event_code: str):
         "matches_made": match_count,
         "event_code": event["code"]
     }
+
+
+@api_router.get("/countdown/{event_code}/qr")
+async def get_countdown_qr(event_code: str, request: Request):
+    event = await db.events.find_one({"code": event_code.upper()}, {"_id": 0})
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+
+    # Build the countdown URL
+    origin = str(request.headers.get("origin", request.base_url)).rstrip("/")
+    countdown_url = f"{origin}/countdown/{event_code.upper()}"
+
+    # Generate QR code
+    qr = qrcode.QRCode(version=1, box_size=10, border=2)
+    qr.add_data(countdown_url)
+    qr.make(fit=True)
+    img = qr.make_image(fill_color="black", back_color="white")
+
+    buf = BytesIO()
+    img.save(buf, format="PNG")
+    buf.seek(0)
+
+    return Response(content=buf.getvalue(), media_type="image/png")
 
 
 # ============ ROOT ============

@@ -321,6 +321,14 @@ export default function AdminDashboard() {
                 >
                   Copy shareable countdown link
                 </button>
+                <a
+                  href={`${API}/countdown/${event.code}/qr`}
+                  download={`${event.code}-qr.png`}
+                  className="font-sans text-xs text-muted-foreground hover:text-foreground underline mt-1 block"
+                  data-testid="download-qr-btn"
+                >
+                  Download QR code for invitations
+                </a>
               </div>
             </div>
 
@@ -399,19 +407,19 @@ export default function AdminDashboard() {
 
             {/* Tips */}
             <div className="card-modern p-6 bg-muted/20">
-              <h3 className="font-serif text-lg text-foreground mb-4 tracking-tight">How to Use</h3>
+              <h3 className="font-serif text-lg text-foreground mb-4 tracking-tight">Make it Unforgettable</h3>
               <ul className="font-sans text-sm text-muted-foreground space-y-3">
                 <li className="flex items-start gap-3">
                   <span className="w-5 h-5 bg-foreground text-white rounded-full flex items-center justify-center text-xs flex-shrink-0 mt-0.5">1</span>
-                  Share the event code on your wedding invitations
+                  Print the QR code on your invitations so guests can join early
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="w-5 h-5 bg-foreground text-white rounded-full flex items-center justify-center text-xs flex-shrink-0 mt-0.5">2</span>
-                  Encourage guests to complete their profiles before the event
+                  Share the countdown link to build anticipation before the big day
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="w-5 h-5 bg-foreground text-white rounded-full flex items-center justify-center text-xs flex-shrink-0 mt-0.5">3</span>
-                  Announce the app during the reception
+                  On the wedding day, announce the Bouquet Toss feature during the reception
                 </li>
               </ul>
             </div>

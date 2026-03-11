@@ -200,6 +200,20 @@ export default function CountdownPage() {
           </div>
         )}
 
+        {/* QR Code */}
+        <div className="mt-10 space-y-3" data-testid="qr-section">
+          <div className="w-12 h-px bg-border/60 mx-auto" />
+          <p className="font-sans text-xs tracking-[0.15em] text-muted-foreground/60 uppercase">Scan to Join</p>
+          <div className="inline-block card-modern p-3">
+            <img 
+              src={`${API}/countdown/${eventCode}/qr`}
+              alt="QR Code"
+              className="w-32 h-32"
+              data-testid="qr-code-img"
+            />
+          </div>
+        </div>
+
         {/* Share hint */}
         <p className="font-sans text-xs text-muted-foreground/50 mt-10">
           Share this page with the wedding guests
