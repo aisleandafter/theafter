@@ -1,4 +1,4 @@
-from fastapi import FastAPI, APIRouter, HTTPException, Depends, Request
+from fastapi import FastAPI, APIRouter, HTTPException, Depends, Request, WebSocket, WebSocketDisconnect
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
@@ -42,6 +42,36 @@ security = HTTPBearer()
 
 app = FastAPI()
 api_router = APIRouter(prefix="/api")
+
+# ============ WEBSOCKET CONNECTION MANAGER ============
+
+class ConnectionManager:
+    def __init__(self):
+        self.active_connections: dict[str, list[WebSocket]] = {}
+
+    async def connect(self, websocket: WebSocket, match_id: str):
+        await websocket.accept()
+        if match_id not in self.active_connections:
+            self.active_connections[match_id] = []
+        self.active_connections[match_id].append(websocket)
+
+    def disconnect(self, websocket: WebSocket, match_id: str):
+        if match_id in self.active_connections:
+            self.active_connections[match_id] = [
+                ws for ws in self.active_connections[match_id] if ws != websocket
+            ]
+            if not self.active_connections[match_id]:
+                del self.active_connections[match_id]
+
+    async def broadcast_to_match(self, match_id: str, message: dict):
+        if match_id in self.active_connections:
+            for ws in self.active_connections[match_id]:
+                try:
+                    await ws.send_json(message)
+                except Exception:
+                    pass
+
+ws_manager = ConnectionManager()
 
 # ============ MODELS ============
 
@@ -555,7 +585,52 @@ async def send_message(data: MessageSend, user = Depends(get_current_user)):
     }
     await db.messages.insert_one(message_doc)
     
-    return {"message": {k: v for k, v in message_doc.items() if k != "_id"}}
+    msg_response = {k: v for k, v in message_doc.items() if k != "_id"}
+    
+    # Broadcast via WebSocket
+    await ws_manager.broadcast_to_match(data.match_id, {
+        "type": "new_message",
+        "message": msg_response
+    })
+    
+    return {"message": msg_response}
+
+
+# ============ WEBSOCKET ENDPOINT ============
+
+@app.websocket("/ws/chat/{match_id}")
+async def websocket_chat(websocket: WebSocket, match_id: str):
+    # Authenticate via query param
+    token = websocket.query_params.get("token")
+    if not token:
+        await websocket.close(code=4001)
+        return
+
+    try:
+        payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+        user = await db.users.find_one({"id": payload["user_id"]}, {"_id": 0})
+        if not user:
+            await websocket.close(code=4001)
+            return
+    except (jwt.ExpiredSignatureError, jwt.InvalidTokenError):
+        await websocket.close(code=4001)
+        return
+
+    # Verify user is part of match
+    match = await db.matches.find_one({
+        "id": match_id,
+        "$or": [{"user1_id": user["id"]}, {"user2_id": user["id"]}]
+    })
+    if not match:
+        await websocket.close(code=4003)
+        return
+
+    await ws_manager.connect(websocket, match_id)
+    try:
+        while True:
+            await websocket.receive_text()
+    except WebSocketDisconnect:
+        ws_manager.disconnect(websocket, match_id)
 
 # ============ AI ENDPOINTS ============
 
@@ -749,6 +824,48 @@ async def bouquet_toss(user=Depends(get_current_user)):
     return {
         "match_id": match_id,
         "matched_user": chosen
+    }
+
+
+# ============ COUNTDOWN ENDPOINT (PUBLIC) ============
+
+@api_router.get("/countdown/{event_code}")
+async def get_countdown(event_code: str):
+    event = await db.events.find_one({"code": event_code.upper()}, {"_id": 0})
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+
+    wedding_date_str = event.get("wedding_date")
+    if not wedding_date_str:
+        raise HTTPException(status_code=400, detail="No wedding date set")
+
+    try:
+        wedding_dt = datetime.fromisoformat(wedding_date_str + "T00:00:00+00:00")
+        now = datetime.now(timezone.utc)
+        delta = wedding_dt - now
+        total_seconds = max(int(delta.total_seconds()), 0)
+        days = total_seconds // 86400
+        hours = (total_seconds % 86400) // 3600
+        minutes = (total_seconds % 3600) // 60
+        seconds = total_seconds % 60
+        is_wedding_day = days == 0 and total_seconds > 0
+        is_past = total_seconds == 0
+    except (ValueError, TypeError):
+        raise HTTPException(status_code=400, detail="Invalid wedding date")
+
+    guest_count = await db.users.count_documents({"event_id": event["id"], "is_host": False, "profile_complete": True})
+    match_count = await db.matches.count_documents({"event_id": event["id"]})
+
+    return {
+        "event_name": f"{event.get('bride_name', '')} & {event.get('groom_name', '')}",
+        "wedding_date": wedding_date_str,
+        "venue": event.get("venue"),
+        "countdown": {"days": days, "hours": hours, "minutes": minutes, "seconds": seconds},
+        "is_wedding_day": is_wedding_day or is_past,
+        "is_past": is_past,
+        "guests_joined": guest_count,
+        "matches_made": match_count,
+        "event_code": event["code"]
     }
 
 

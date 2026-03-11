@@ -282,6 +282,17 @@ export default function AdminDashboard() {
                     Copy
                   </Button>
                 </div>
+                <button
+                  onClick={() => {
+                    const url = `${window.location.origin}/countdown/${event.code}`;
+                    navigator.clipboard.writeText(url);
+                    toast.success('Countdown link copied!');
+                  }}
+                  className="font-sans text-xs text-muted-foreground hover:text-foreground underline mt-3 block"
+                  data-testid="share-countdown-btn"
+                >
+                  Copy shareable countdown link
+                </button>
               </div>
             </div>
 

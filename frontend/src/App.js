@@ -8,6 +8,7 @@ import DiscoverPage from "./pages/DiscoverPage";
 import MatchesPage from "./pages/MatchesPage";
 import ChatPage from "./pages/ChatPage";
 import AdminDashboard from "./pages/AdminDashboard";
+import CountdownPage from "./pages/CountdownPage";
 import "./App.css";
 
 const ProtectedRoute = ({ children }) => {
@@ -65,6 +66,7 @@ function AppRoutes() {
   return (
     <Routes>
       <Route path="/" element={<LandingPage />} />
+      <Route path="/countdown/:eventCode" element={<CountdownPage />} />
       <Route path="/auth" element={user ? <Navigate to={authRedirect} replace /> : <AuthPage />} />
       <Route 
         path="/profile-setup" 

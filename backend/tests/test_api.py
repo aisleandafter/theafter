@@ -319,6 +319,110 @@ class TestChatEndpoints:
         assert "messages" in data
         assert isinstance(data["messages"], list)
         print(f"✓ Chat endpoint returned {len(data['messages'])} messages")
+    
+    def test_send_message_success(self, guest_token):
+        """Test POST /api/chat/send creates a message and returns it"""
+        import uuid
+        test_content = f"Test message {uuid.uuid4().hex[:8]}"
+        
+        response = requests.post(
+            f"{BASE_URL}/api/chat/send",
+            headers={"Authorization": f"Bearer {guest_token}"},
+            json={"match_id": MATCH_ID, "content": test_content}
+        )
+        assert response.status_code == 200, f"Send message failed: {response.text}"
+        data = response.json()
+        
+        # Verify response structure
+        assert "message" in data
+        msg = data["message"]
+        assert "id" in msg
+        assert "match_id" in msg
+        assert "sender_id" in msg
+        assert "content" in msg
+        assert "created_at" in msg
+        
+        # Verify content matches
+        assert msg["content"] == test_content
+        assert msg["match_id"] == MATCH_ID
+        
+        print(f"✓ Message sent successfully: id={msg['id'][:8]}...")
+        
+        # Verify message appears in chat history
+        get_response = requests.get(
+            f"{BASE_URL}/api/chat/{MATCH_ID}",
+            headers={"Authorization": f"Bearer {guest_token}"}
+        )
+        assert get_response.status_code == 200
+        messages = get_response.json()["messages"]
+        found = any(m["content"] == test_content for m in messages)
+        assert found, "Sent message not found in chat history"
+        print(f"✓ Message verified in chat history")
+    
+    def test_send_message_unauthorized_match(self, guest_token):
+        """Test sending message to an invalid match returns 403"""
+        response = requests.post(
+            f"{BASE_URL}/api/chat/send",
+            headers={"Authorization": f"Bearer {guest_token}"},
+            json={"match_id": "invalid-match-id", "content": "Test"}
+        )
+        assert response.status_code == 403
+        print("✓ Sending to invalid match correctly rejected with 403")
+
+
+# ============ COUNTDOWN ENDPOINT TESTS (PUBLIC) ============
+class TestCountdownEndpoint:
+    """Countdown endpoint tests - public, no auth needed"""
+    
+    def test_countdown_valid_event_code(self):
+        """Test GET /api/countdown/EULF18 returns public countdown data"""
+        response = requests.get(f"{BASE_URL}/api/countdown/{EVENT_CODE}")
+        assert response.status_code == 200, f"Countdown failed: {response.text}"
+        data = response.json()
+        
+        # Verify all expected fields
+        assert "event_name" in data
+        assert "wedding_date" in data
+        assert "venue" in data
+        assert "countdown" in data
+        assert "guests_joined" in data
+        assert "matches_made" in data
+        assert "event_code" in data
+        
+        # Verify countdown structure
+        countdown = data["countdown"]
+        assert "days" in countdown
+        assert "hours" in countdown
+        assert "minutes" in countdown
+        assert "seconds" in countdown
+        
+        # Verify data values
+        assert data["event_name"] == "Emma & James"
+        assert data["event_code"] == EVENT_CODE
+        assert isinstance(data["guests_joined"], int)
+        assert isinstance(data["matches_made"], int)
+        
+        print(f"✓ Countdown endpoint returned:")
+        print(f"  Event: {data['event_name']}")
+        print(f"  Date: {data['wedding_date']}")
+        print(f"  Countdown: {countdown['days']}d {countdown['hours']}h {countdown['minutes']}m {countdown['seconds']}s")
+        print(f"  Guests: {data['guests_joined']}, Matches: {data['matches_made']}")
+    
+    def test_countdown_invalid_event_code(self):
+        """Test GET /api/countdown/INVALID returns 404"""
+        response = requests.get(f"{BASE_URL}/api/countdown/INVALID")
+        assert response.status_code == 404, f"Expected 404, got {response.status_code}"
+        data = response.json()
+        assert "detail" in data
+        print(f"✓ Invalid event code correctly returns 404: {data['detail']}")
+    
+    def test_countdown_lowercase_event_code(self):
+        """Test GET /api/countdown/eulf18 (lowercase) also works"""
+        response = requests.get(f"{BASE_URL}/api/countdown/eulf18")
+        assert response.status_code == 200, f"Lowercase code failed: {response.text}"
+        data = response.json()
+        assert data["event_code"] == EVENT_CODE
+        print(f"✓ Lowercase event code correctly resolved to {EVENT_CODE}")
 
 
 # ============ WEDDING DAY MODE ENDPOINTS TESTS ============

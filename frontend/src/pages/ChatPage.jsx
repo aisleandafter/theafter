@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Send, User, Wand2 } from 'lucide-react';
 import { Button } from '../components/ui/button';
@@ -9,12 +9,14 @@ import { toast } from 'sonner';
 import { format } from 'date-fns';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+const WS_URL = process.env.REACT_APP_BACKEND_URL.replace(/^https/, 'wss').replace(/^http/, 'ws');
 
 export default function ChatPage() {
   const navigate = useNavigate();
   const { matchId } = useParams();
-  const { user } = useAuth();
+  const { user, token } = useAuth();
   const messagesEndRef = useRef(null);
+  const wsRef = useRef(null);
   
   const [messages, setMessages] = useState([]);
   const [matchInfo, setMatchInfo] = useState(null);
@@ -24,11 +26,64 @@ export default function ChatPage() {
   const [starters, setStarters] = useState([]);
   const [showStarters, setShowStarters] = useState(false);
   const [loadingStarters, setLoadingStarters] = useState(false);
+  const [wsConnected, setWsConnected] = useState(false);
 
   useEffect(() => {
     fetchMessages();
     fetchMatchInfo();
   }, [matchId]);
+
+  // WebSocket connection
+  useEffect(() => {
+    if (!token || !matchId) return;
+
+    const connectWs = () => {
+      const ws = new WebSocket(`${WS_URL}/ws/chat/${matchId}?token=${token}`);
+      
+      ws.onopen = () => {
+        setWsConnected(true);
+      };
+
+      ws.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          if (data.type === 'new_message' && data.message) {
+            setMessages(prev => {
+              // Avoid duplicates (from optimistic update)
+              const exists = prev.some(m => m.id === data.message.id);
+              if (exists) return prev;
+              // Skip own messages (already added optimistically)
+              if (data.message.sender_id === user?.id) return prev;
+              return [...prev, data.message];
+            });
+          }
+        } catch (e) {
+          console.error('WS parse error:', e);
+        }
+      };
+
+      ws.onclose = () => {
+        setWsConnected(false);
+        // Reconnect after 3s
+        setTimeout(connectWs, 3000);
+      };
+
+      ws.onerror = () => {
+        ws.close();
+      };
+
+      wsRef.current = ws;
+    };
+
+    connectWs();
+
+    return () => {
+      if (wsRef.current) {
+        wsRef.current.close();
+        wsRef.current = null;
+      }
+    };
+  }, [token, matchId, user?.id]);
 
   useEffect(() => {
     scrollToBottom();
@@ -163,6 +218,7 @@ export default function ChatPage() {
             </h2>
             <p className="font-sans text-xs text-muted-foreground">
               {matchInfo?.matched_user?.relationship_to_couple || 'Wedding Guest'}
+              {wsConnected && <span className="ml-2 inline-block w-1.5 h-1.5 bg-green-500 rounded-full" />}
             </p>
           </div>
         </div>
