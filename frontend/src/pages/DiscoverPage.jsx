@@ -1,10 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { X, User, MessageCircle, LogOut, Sparkles, TrendingUp } from 'lucide-react';
+import { X, User, MessageCircle, LogOut, Sparkles, TrendingUp, Bell } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
 import { Dialog, DialogContent } from '../components/ui/dialog';
 import { useAuth } from '../context/AuthContext';
+import { getPhotoUrl } from '../utils/photo';
 import axios from 'axios';
 import { toast } from 'sonner';
 
@@ -60,12 +61,23 @@ export default function DiscoverPage() {
   const [bouquetUsed, setBouquetUsed] = useState(false);
   const [bouquetLoading, setBouquetLoading] = useState(false);
   const [isBouquetMatch, setIsBouquetMatch] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
     fetchProfiles();
     checkWeddingDay();
     fetchLiveStats();
+    fetchNotifications();
   }, []);
+
+  const fetchNotifications = async () => {
+    try {
+      const res = await axios.get(`${API}/notifications`);
+      setUnreadCount(res.data.unread_count);
+    } catch (err) {
+      console.error('Failed to fetch notifications:', err);
+    }
+  };
 
   const checkWeddingDay = async () => {
     try {
@@ -177,10 +189,15 @@ export default function DiscoverPage() {
             variant="ghost"
             size="sm"
             onClick={() => navigate('/matches')}
-            className="text-foreground/60 hover:text-foreground"
+            className="text-foreground/60 hover:text-foreground relative"
             data-testid="matches-btn"
           >
-            <MessageCircle className="w-5 h-5" />
+            <Bell className="w-5 h-5" />
+            {unreadCount > 0 && (
+              <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-foreground text-white rounded-full text-[10px] flex items-center justify-center font-sans">
+                {unreadCount > 9 ? '9+' : unreadCount}
+              </span>
+            )}
           </Button>
           <Button
             variant="ghost"
@@ -241,7 +258,7 @@ export default function DiscoverPage() {
             <div className="aspect-[3/4] overflow-hidden bg-muted relative">
               {currentProfile.photo_url ? (
                 <img 
-                  src={currentProfile.photo_url} 
+                  src={getPhotoUrl(currentProfile.photo_url)} 
                   alt={currentProfile.name}
                   className="w-full h-full object-cover"
                 />
@@ -402,7 +419,7 @@ export default function DiscoverPage() {
               {matchedUser?.photo_url ? (
                 <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-muted">
                   <img 
-                    src={matchedUser.photo_url} 
+                    src={getPhotoUrl(matchedUser.photo_url)} 
                     alt={matchedUser.name}
                     className="w-full h-full object-cover"
                   />

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { MessageCircle, User, ArrowLeft } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { useAuth } from '../context/AuthContext';
+import { getPhotoUrl } from '../utils/photo';
 import axios from 'axios';
 import { format } from 'date-fns';
 
@@ -76,7 +77,7 @@ export default function MatchesPage() {
                 <div className="w-14 h-14 rounded-full overflow-hidden bg-muted/30 flex-shrink-0">
                   {match.matched_user?.photo_url ? (
                     <img 
-                      src={match.matched_user.photo_url}
+                      src={getPhotoUrl(match.matched_user.photo_url)}
                       alt={match.matched_user.name}
                       className="w-full h-full object-cover"
                     />

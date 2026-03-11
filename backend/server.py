@@ -1,10 +1,12 @@
-from fastapi import FastAPI, APIRouter, HTTPException, Depends, Request, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, APIRouter, HTTPException, Depends, Request, WebSocket, WebSocketDisconnect, UploadFile, File, Query, Header
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi.responses import Response
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 import os
 import logging
+import requests as http_requests
 from pathlib import Path
 from pydantic import BaseModel, Field
 from typing import List, Optional
@@ -14,6 +16,8 @@ from datetime import datetime, timezone, date
 import jwt
 import bcrypt
 import anthropic
+from io import BytesIO
+from PIL import Image
 from emergentintegrations.payments.stripe.checkout import StripeCheckout, CheckoutSessionResponse, CheckoutStatusResponse, CheckoutSessionRequest
 
 ROOT_DIR = Path(__file__).parent
@@ -37,6 +41,64 @@ STRIPE_API_KEY = os.environ.get('STRIPE_API_KEY')
 
 # Event pricing - fixed on backend
 EVENT_PRICE = 49.99  # One-time payment for event creation
+
+# ============ OBJECT STORAGE ============
+
+STORAGE_URL = "https://integrations.emergentagent.com/objstore/api/v1/storage"
+EMERGENT_KEY = os.environ.get('EMERGENT_LLM_KEY')
+APP_NAME = "aisle-and-after"
+storage_key = None
+
+def init_storage():
+    global storage_key
+    if storage_key:
+        return storage_key
+    resp = http_requests.post(f"{STORAGE_URL}/init", json={"emergent_key": EMERGENT_KEY}, timeout=30)
+    resp.raise_for_status()
+    storage_key = resp.json()["storage_key"]
+    return storage_key
+
+def put_object(path: str, data: bytes, content_type: str) -> dict:
+    key = init_storage()
+    resp = http_requests.put(
+        f"{STORAGE_URL}/objects/{path}",
+        headers={"X-Storage-Key": key, "Content-Type": content_type},
+        data=data, timeout=120
+    )
+    resp.raise_for_status()
+    return resp.json()
+
+def get_object(path: str) -> tuple:
+    key = init_storage()
+    resp = http_requests.get(
+        f"{STORAGE_URL}/objects/{path}",
+        headers={"X-Storage-Key": key}, timeout=60
+    )
+    resp.raise_for_status()
+    return resp.content, resp.headers.get("Content-Type", "application/octet-stream")
+
+def crop_circle(image_bytes: bytes) -> bytes:
+    img = Image.open(BytesIO(image_bytes)).convert("RGBA")
+    size = min(img.size)
+    left = (img.width - size) // 2
+    top = (img.height - size) // 2
+    img = img.crop((left, top, left + size, top + size))
+    mask = Image.new("L", (size, size), 0)
+    from PIL import ImageDraw
+    ImageDraw.Draw(mask).ellipse((0, 0, size, size), fill=255)
+    output = Image.new("RGBA", (size, size), (0, 0, 0, 0))
+    output.paste(img, mask=mask)
+    buf = BytesIO()
+    output.save(buf, format="PNG")
+    return buf.getvalue()
+
+# ============ PROMO CODES ============
+
+PROMO_CODES = {
+    "LOVE2026": {"discount_percent": 50, "description": "50% off"},
+    "WEDDING": {"discount_percent": 25, "description": "25% off"},
+    "FREEAISLE": {"discount_percent": 100, "description": "Free event"},
+}
 
 security = HTTPBearer()
 
@@ -117,6 +179,7 @@ class ConversationStarterRequest(BaseModel):
 
 class PaymentInitRequest(BaseModel):
     origin_url: str
+    promo_code: Optional[str] = None
 
 class PaymentStatusRequest(BaseModel):
     session_id: str
@@ -188,6 +251,23 @@ async def get_me(user = Depends(get_current_user)):
 
 # ============ PAYMENT ENDPOINTS ============
 
+@api_router.post("/promo/validate")
+async def validate_promo(data: dict, user=Depends(get_current_user)):
+    code = data.get("code", "").upper()
+    promo = PROMO_CODES.get(code)
+    if not promo:
+        raise HTTPException(status_code=404, detail="Invalid promo code")
+    
+    discounted_price = round(EVENT_PRICE * (1 - promo["discount_percent"] / 100), 2)
+    return {
+        "valid": True,
+        "code": code,
+        "discount_percent": promo["discount_percent"],
+        "description": promo["description"],
+        "original_price": EVENT_PRICE,
+        "final_price": discounted_price
+    }
+
 @api_router.post("/payments/checkout")
 async def create_checkout(data: PaymentInitRequest, request: Request, user = Depends(get_current_user)):
     if not user.get("is_host"):
@@ -201,6 +281,32 @@ async def create_checkout(data: PaymentInitRequest, request: Request, user = Dep
     if existing_payment:
         raise HTTPException(status_code=400, detail="You already have an active event package")
     
+    # Calculate price with promo code
+    final_price = EVENT_PRICE
+    applied_promo = None
+    if data.promo_code:
+        promo = PROMO_CODES.get(data.promo_code.upper())
+        if promo:
+            final_price = round(EVENT_PRICE * (1 - promo["discount_percent"] / 100), 2)
+            applied_promo = data.promo_code.upper()
+    
+    # If 100% discount, skip payment
+    if final_price <= 0:
+        await db.payment_transactions.insert_one({
+            "id": str(uuid.uuid4()),
+            "session_id": f"promo-{uuid.uuid4()}",
+            "user_id": user["id"],
+            "user_email": user["email"],
+            "amount": 0,
+            "currency": "usd",
+            "payment_status": "paid",
+            "promo_code": applied_promo,
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "paid_at": datetime.now(timezone.utc).isoformat()
+        })
+        await db.users.update_one({"id": user["id"]}, {"$set": {"has_paid": True}})
+        return {"checkout_url": None, "session_id": None, "paid_free": True}
+    
     # Initialize Stripe
     host_url = str(request.base_url).rstrip('/')
     webhook_url = f"{host_url}/api/webhook/stripe"
@@ -211,14 +317,15 @@ async def create_checkout(data: PaymentInitRequest, request: Request, user = Dep
     cancel_url = f"{data.origin_url}/admin"
     
     checkout_request = CheckoutSessionRequest(
-        amount=EVENT_PRICE,
+        amount=final_price,
         currency="usd",
         success_url=success_url,
         cancel_url=cancel_url,
         metadata={
             "user_id": user["id"],
             "user_email": user["email"],
-            "product": "wedding_event"
+            "product": "wedding_event",
+            "promo_code": applied_promo or ""
         }
     )
     
@@ -230,9 +337,10 @@ async def create_checkout(data: PaymentInitRequest, request: Request, user = Dep
         "session_id": session.session_id,
         "user_id": user["id"],
         "user_email": user["email"],
-        "amount": EVENT_PRICE,
+        "amount": final_price,
         "currency": "usd",
         "payment_status": "pending",
+        "promo_code": applied_promo,
         "created_at": datetime.now(timezone.utc).isoformat()
     }
     await db.payment_transactions.insert_one(transaction_doc)
@@ -441,6 +549,87 @@ async def get_profile(user_id: str, current_user = Depends(get_current_user)):
         raise HTTPException(status_code=404, detail="Profile not found")
     return {"profile": profile}
 
+
+# ============ PHOTO UPLOAD ENDPOINTS ============
+
+@api_router.post("/photos/upload")
+async def upload_photo(file: UploadFile = File(...), user=Depends(get_current_user)):
+    if not file.content_type or not file.content_type.startswith("image/"):
+        raise HTTPException(status_code=400, detail="Only image files are allowed")
+
+    data = await file.read()
+    if len(data) > 10 * 1024 * 1024:
+        raise HTTPException(status_code=400, detail="File too large (max 10MB)")
+
+    # Crop to circle
+    try:
+        circle_data = crop_circle(data)
+    except Exception as e:
+        logging.error(f"Crop error: {e}")
+        raise HTTPException(status_code=400, detail="Could not process image")
+
+    file_id = str(uuid.uuid4())
+    storage_path = f"{APP_NAME}/photos/{user['id']}/{file_id}.png"
+
+    try:
+        result = put_object(storage_path, circle_data, "image/png")
+    except Exception as e:
+        logging.error(f"Storage upload error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to upload photo")
+
+    await db.files.insert_one({
+        "id": file_id,
+        "user_id": user["id"],
+        "storage_path": result["path"],
+        "content_type": "image/png",
+        "size": result.get("size", len(circle_data)),
+        "is_deleted": False,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    })
+
+    # Update user's photo_url to point to serve endpoint
+    photo_url = f"/api/photos/{file_id}"
+    await db.users.update_one({"id": user["id"]}, {"$set": {"photo_url": photo_url}})
+
+    return {"photo_url": photo_url, "file_id": file_id}
+
+
+@api_router.get("/photos/{file_id}")
+async def serve_photo(file_id: str):
+    record = await db.files.find_one({"id": file_id, "is_deleted": False}, {"_id": 0})
+    if not record:
+        raise HTTPException(status_code=404, detail="Photo not found")
+
+    try:
+        data, content_type = get_object(record["storage_path"])
+    except Exception as e:
+        logging.error(f"Storage download error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to retrieve photo")
+
+    return Response(content=data, media_type=record.get("content_type", content_type))
+
+
+# ============ NOTIFICATION ENDPOINTS ============
+
+@api_router.get("/notifications")
+async def get_notifications(user=Depends(get_current_user)):
+    notifications = await db.notifications.find(
+        {"user_id": user["id"]},
+        {"_id": 0}
+    ).sort("created_at", -1).to_list(50)
+    
+    unread_count = await db.notifications.count_documents({"user_id": user["id"], "read": False})
+    return {"notifications": notifications, "unread_count": unread_count}
+
+
+@api_router.post("/notifications/read-all")
+async def mark_notifications_read(user=Depends(get_current_user)):
+    await db.notifications.update_many(
+        {"user_id": user["id"], "read": False},
+        {"$set": {"read": True}}
+    )
+    return {"status": "ok"}
+
 # ============ DISCOVERY/SWIPE ENDPOINTS ============
 
 @api_router.get("/discover")
@@ -512,6 +701,31 @@ async def swipe(data: SwipeAction, user = Depends(get_current_user)):
                 "match_id": match_id,
                 "matched_user": matched_user
             }
+            
+            # Create notifications for both users
+            now = datetime.now(timezone.utc).isoformat()
+            await db.notifications.insert_many([
+                {
+                    "id": str(uuid.uuid4()),
+                    "user_id": user["id"],
+                    "type": "match",
+                    "title": "New Match!",
+                    "message": f"You matched with {matched_user.get('name', 'someone')}!",
+                    "match_id": match_id,
+                    "read": False,
+                    "created_at": now
+                },
+                {
+                    "id": str(uuid.uuid4()),
+                    "user_id": data.target_user_id,
+                    "type": "match",
+                    "title": "New Match!",
+                    "message": f"You matched with {user.get('name', 'someone')}!",
+                    "match_id": match_id,
+                    "read": False,
+                    "created_at": now
+                }
+            ])
     
     return {"success": True, "is_match": is_match, "match": match_data}
 
@@ -891,6 +1105,14 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
+
+@app.on_event("startup")
+async def startup_init():
+    try:
+        init_storage()
+        logger.info("Object storage initialized")
+    except Exception as e:
+        logger.error(f"Storage init failed: {e}")
 
 @app.on_event("shutdown")
 async def shutdown_db_client():

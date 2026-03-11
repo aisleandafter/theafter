@@ -4,6 +4,7 @@ import { ArrowLeft, Send, User, Wand2 } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { useAuth } from '../context/AuthContext';
+import { getPhotoUrl } from '../utils/photo';
 import axios from 'axios';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
@@ -202,7 +203,7 @@ export default function ChatPage() {
           <div className="w-10 h-10 rounded-full overflow-hidden bg-muted/30">
             {matchInfo?.matched_user?.photo_url ? (
               <img 
-                src={matchInfo.matched_user.photo_url}
+                src={getPhotoUrl(matchInfo.matched_user.photo_url)}
                 alt={matchInfo.matched_user.name}
                 className="w-full h-full object-cover"
               />

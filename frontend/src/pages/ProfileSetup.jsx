@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Camera, ArrowRight, ArrowLeft } from 'lucide-react';
+import { Camera, ArrowRight, ArrowLeft, Loader2 } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
@@ -12,6 +12,7 @@ import axios from 'axios';
 import { toast } from 'sonner';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const LOGO_URL = "https://customer-assets.emergentagent.com/job_14cfd5a5-e530-4fa4-8620-3c90f05d18d5/artifacts/mw7crcio_logo.png";
 
 const INTERESTS = [
@@ -30,6 +31,7 @@ export default function ProfileSetup() {
   const { user, updateUser } = useAuth();
   const [step, setStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   
   const [profile, setProfile] = useState({
     photo_url: user?.photo_url || '',
@@ -53,15 +55,35 @@ export default function ProfileSetup() {
     }));
   };
 
-  const handlePhotoUpload = (e) => {
+  const handlePhotoUpload = async (e) => {
     const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setProfile(prev => ({ ...prev, photo_url: reader.result }));
-      };
-      reader.readAsDataURL(file);
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select an image file');
+      return;
     }
+
+    setIsUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      const res = await axios.post(`${API}/photos/upload`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      setProfile(prev => ({ ...prev, photo_url: res.data.photo_url }));
+      toast.success('Photo uploaded!');
+    } catch (err) {
+      toast.error(err.response?.data?.detail || 'Failed to upload photo');
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const getPhotoSrc = (url) => {
+    if (!url) return null;
+    if (url.startsWith('http')) return url;
+    return `${BACKEND_URL}${url}`;
   };
 
   const handleSubmit = async () => {
@@ -100,9 +122,11 @@ export default function ProfileSetup() {
             <div className="flex justify-center py-4">
               <label className="relative cursor-pointer group">
                 <div className="w-40 h-40 rounded-full border-2 border-dashed border-border flex items-center justify-center overflow-hidden bg-muted/30 transition-all group-hover:border-foreground/30">
-                  {profile.photo_url ? (
+                  {isUploading ? (
+                    <Loader2 className="w-10 h-10 text-muted-foreground/50 animate-spin" />
+                  ) : profile.photo_url ? (
                     <img 
-                      src={profile.photo_url} 
+                      src={getPhotoSrc(profile.photo_url)} 
                       alt="Profile" 
                       className="w-full h-full object-cover"
                     />

@@ -29,6 +29,9 @@ export default function AdminDashboard() {
   const [paymentSuccess, setPaymentSuccess] = useState(false);
   const [liveStats, setLiveStats] = useState(null);
   const [isWeddingDay, setIsWeddingDay] = useState(false);
+  const [promoCode, setPromoCode] = useState('');
+  const [promoResult, setPromoResult] = useState(null);
+  const [promoLoading, setPromoLoading] = useState(false);
   
   const [eventForm, setEventForm] = useState({
     bride_name: '',
@@ -133,12 +136,37 @@ export default function AdminDashboard() {
     }
   };
 
+  const validatePromoCode = async () => {
+    if (!promoCode.trim()) return;
+    setPromoLoading(true);
+    try {
+      const res = await axios.post(`${API}/promo/validate`, { code: promoCode });
+      setPromoResult(res.data);
+      toast.success(`${res.data.description} applied!`);
+    } catch (err) {
+      setPromoResult(null);
+      toast.error('Invalid promo code');
+    } finally {
+      setPromoLoading(false);
+    }
+  };
+
   const handlePayment = async () => {
     setIsProcessingPayment(true);
     try {
       const res = await axios.post(`${API}/payments/checkout`, {
-        origin_url: window.location.origin
+        origin_url: window.location.origin,
+        promo_code: promoResult?.code || null
       });
+      
+      // If 100% discount, payment is instant
+      if (res.data.paid_free) {
+        setHasPaid(true);
+        setPaymentSuccess(true);
+        setIsProcessingPayment(false);
+        toast.success('Promo code applied! You can now create your event.');
+        return;
+      }
       
       // Open Stripe Checkout in new tab to avoid proxy/iframe issues
       const stripeWindow = window.open(res.data.checkout_url, '_blank');
@@ -425,6 +453,39 @@ export default function AdminDashboard() {
                       Match analytics
                     </li>
                   </ul>
+                  {/* Promo Code */}
+                  <div className="mb-4">
+                    <div className="flex gap-2">
+                      <Input
+                        value={promoCode}
+                        onChange={(e) => { setPromoCode(e.target.value); setPromoResult(null); }}
+                        placeholder="Promo code"
+                        className="flex-1 bg-white border-border/30 rounded-xl font-sans text-sm placeholder:text-xs"
+                        data-testid="promo-input"
+                      />
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={validatePromoCode}
+                        disabled={!promoCode.trim() || promoLoading}
+                        className="rounded-xl font-sans text-xs"
+                        data-testid="apply-promo-btn"
+                      >
+                        {promoLoading ? '...' : 'Apply'}
+                      </Button>
+                    </div>
+                    {promoResult && (
+                      <div className="mt-2 p-2 bg-green-50 rounded-lg flex items-center justify-between">
+                        <span className="font-sans text-xs text-green-700">
+                          <Check className="w-3 h-3 inline mr-1" />
+                          {promoResult.description}
+                        </span>
+                        <span className="font-sans text-xs text-green-800 font-medium">
+                          {promoResult.final_price > 0 ? `$${promoResult.final_price}` : 'FREE'}
+                        </span>
+                      </div>
+                    )}
+                  </div>
                   <Button 
                     onClick={handlePayment}
                     disabled={isProcessingPayment}
@@ -436,7 +497,12 @@ export default function AdminDashboard() {
                     ) : (
                       <>
                         <CreditCard className="w-4 h-4 mr-2" />
-                        Pay ${eventPrice}
+                        {promoResult 
+                          ? promoResult.final_price > 0 
+                            ? `Pay $${promoResult.final_price}` 
+                            : 'Claim Free Event'
+                          : `Pay $${eventPrice}`
+                        }
                       </>
                     )}
                   </Button>
