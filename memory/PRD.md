@@ -25,6 +25,9 @@ Build a dating experience that matches the single guests of the bride and groom.
 - [x] AI conversation starters (Anthropic Claude SDK)
 - [x] AI compatibility analysis (Anthropic Claude SDK)
 - [x] Payment webhook handling
+- [x] Wedding Day Mode detection (auto-activates on wedding date)
+- [x] Live activity stats (guests, matches, today's matches, recent match names)
+- [x] Bouquet Toss random matching (one-time per guest per event)
 
 ### Frontend (React + Tailwind + Shadcn UI)
 - [x] Landing page with event code entry (circular logo, serif headlines)
@@ -35,6 +38,12 @@ Build a dating experience that matches the single guests of the bride and groom.
 - [x] Chat interface with AI suggestion button
 - [x] Admin dashboard (payment, event creation, stats)
 - [x] Consistent "tech-forward" design across all pages
+- [x] Live stats bar on Discover page
+- [x] Bouquet Toss button with one-time use enforcement
+- [x] Confetti animation on wedding day matches
+- [x] Wedding Day banner (auto-shows on wedding date)
+- [x] Live Activity card on Admin Dashboard
+- [x] Recent match names on Admin Dashboard
 
 ### Design
 - Brand: "aisle & after"
@@ -54,11 +63,16 @@ Build a dating experience that matches the single guests of the bride and groom.
 - POST /api/auth/register, /api/auth/login, GET /api/auth/me
 - POST /api/payments/checkout, GET /api/payments/status/{session_id}, GET /api/payments/check
 - POST /api/events/create, /api/events/join, GET /api/events/current, GET /api/events/{id}/stats
+- GET /api/events/wedding-day-mode, GET /api/events/live-stats
 - PUT /api/profile, GET /api/profile/{user_id}
 - GET /api/discover, POST /api/swipe
+- POST /api/bouquet-toss
 - GET /api/matches
 - GET /api/chat/{match_id}, POST /api/chat/send
 - POST /api/ai/conversation-starters, POST /api/ai/compatibility
+
+## DB Collections
+- users, events, swipes, matches, messages, payment_transactions, bouquet_tosses
 
 ## Prioritized Backlog
 
@@ -75,7 +89,6 @@ Build a dating experience that matches the single guests of the bride and groom.
 - [ ] Event expiration dates
 
 ### P3 (Low)
-- [ ] Match analytics for hosts
 - [ ] Guest check-in at event
 - [ ] Shareable match stories
 
@@ -85,9 +98,9 @@ Build a dating experience that matches the single guests of the bride and groom.
 - Guest: marcus@demo.com / demo123
 - Guest: sophie@demo.com / demo123
 - Host: testhost@demo.com / demo123
-- Match ID: d0942c71-bfcd-427e-a285-42fafc2a099c
 
 ## Notes
-- Anthropic API key is integrated but requires credits to generate AI responses (falls back gracefully to pre-written starters)
-- Stripe checkout opens in new tab to avoid preview environment rendering issues
-- "Made with Emergent" badge is a preview-only overlay, not in app source code
+- Anthropic API key integrated but requires credits for AI generation (falls back gracefully)
+- Stripe checkout opens in new tab to avoid preview environment issues
+- Wedding Day Mode auto-activates when today matches event's wedding_date
+- Bouquet Toss enforced as one-time per guest per event (stored in bouquet_tosses collection)
