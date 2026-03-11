@@ -9,7 +9,8 @@ from pathlib import Path
 from pydantic import BaseModel, Field
 from typing import List, Optional
 import uuid
-from datetime import datetime, timezone
+import random
+from datetime import datetime, timezone, date
 import jwt
 import bcrypt
 import anthropic
@@ -586,8 +587,8 @@ They're both attending the same wedding."""
         )
         
         response_text = message.content[0].text
-        lines = [l.strip() for l in response_text.split('\n') if l.strip() and l.strip()[0].isdigit()]
-        starters = [l.split('.', 1)[1].strip() if '.' in l else l for l in lines[:3]]
+        lines = [line.strip() for line in response_text.split('\n') if line.strip() and line.strip()[0].isdigit()]
+        starters = [line.split('.', 1)[1].strip() if '.' in line else line for line in lines[:3]]
         
         return {"starters": starters}
     except Exception as e:
@@ -627,6 +628,129 @@ Person 2: {other_user.get('name')}, {other_user.get('age', 'unknown age')}, inte
     except Exception as e:
         logging.error(f"AI error: {e}")
         return {"analysis": "You both share a love for celebration and good company - the perfect recipe for wedding magic! Your shared interests could spark something wonderful."}
+
+# ============ WEDDING DAY MODE ENDPOINTS ============
+
+@api_router.get("/events/wedding-day-mode")
+async def get_wedding_day_mode(user=Depends(get_current_user)):
+    if not user.get("event_id"):
+        return {"is_wedding_day": False}
+
+    event = await db.events.find_one({"id": user["event_id"]}, {"_id": 0})
+    if not event or not event.get("wedding_date"):
+        return {"is_wedding_day": False}
+
+    try:
+        wedding = date.fromisoformat(event["wedding_date"])
+        today = date.today()
+        is_wedding_day = wedding == today
+    except (ValueError, TypeError):
+        is_wedding_day = False
+
+    return {
+        "is_wedding_day": is_wedding_day,
+        "event_name": f"{event.get('bride_name', '')} & {event.get('groom_name', '')}",
+        "wedding_date": event.get("wedding_date")
+    }
+
+
+@api_router.get("/events/live-stats")
+async def get_live_stats(user=Depends(get_current_user)):
+    event_id = user.get("event_id")
+    if not event_id:
+        raise HTTPException(status_code=400, detail="Join an event first")
+
+    today_start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0).isoformat()
+
+    total_guests = await db.users.count_documents({"event_id": event_id, "is_host": False, "profile_complete": True})
+    total_matches = await db.matches.count_documents({"event_id": event_id})
+
+    # Matches created today
+    today_matches = await db.matches.find(
+        {"event_id": event_id, "created_at": {"$gte": today_start}},
+        {"_id": 0}
+    ).to_list(100)
+
+    # Get first names of recent matches (last 5)
+    recent_match_names = []
+    for m in today_matches[-5:]:
+        u1 = await db.users.find_one({"id": m["user1_id"]}, {"_id": 0, "name": 1})
+        u2 = await db.users.find_one({"id": m["user2_id"]}, {"_id": 0, "name": 1})
+        if u1 and u2:
+            n1 = u1.get("name", "Guest").split()[0]
+            n2 = u2.get("name", "Guest").split()[0]
+            recent_match_names.append(f"{n1} & {n2}")
+
+    return {
+        "total_guests": total_guests,
+        "total_matches": total_matches,
+        "today_matches": len(today_matches),
+        "recent_match_names": recent_match_names
+    }
+
+
+@api_router.post("/bouquet-toss")
+async def bouquet_toss(user=Depends(get_current_user)):
+    event_id = user.get("event_id")
+    if not event_id:
+        raise HTTPException(status_code=400, detail="Join an event first")
+
+    # Check one-time use
+    already_tossed = await db.bouquet_tosses.find_one({"user_id": user["id"], "event_id": event_id})
+    if already_tossed:
+        raise HTTPException(status_code=400, detail="You've already used your bouquet toss!")
+
+    # Find eligible guests: same event, profile complete, not self, not already matched with user
+    existing_matches = await db.matches.find({
+        "event_id": event_id,
+        "$or": [{"user1_id": user["id"]}, {"user2_id": user["id"]}]
+    }).to_list(1000)
+    matched_ids = set()
+    for m in existing_matches:
+        matched_ids.add(m["user1_id"])
+        matched_ids.add(m["user2_id"])
+    matched_ids.add(user["id"])
+
+    candidates = await db.users.find({
+        "event_id": event_id,
+        "id": {"$nin": list(matched_ids)},
+        "profile_complete": True,
+        "is_host": False
+    }, {"_id": 0, "password": 0}).to_list(500)
+
+    if not candidates:
+        raise HTTPException(status_code=404, detail="No available guests for a bouquet toss right now")
+
+    # Pick random candidate
+    chosen = random.choice(candidates)
+
+    # Create a match
+    match_id = str(uuid.uuid4())
+    match_doc = {
+        "id": match_id,
+        "user1_id": user["id"],
+        "user2_id": chosen["id"],
+        "event_id": event_id,
+        "is_bouquet_toss": True,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.matches.insert_one(match_doc)
+
+    # Record the toss
+    await db.bouquet_tosses.insert_one({
+        "id": str(uuid.uuid4()),
+        "user_id": user["id"],
+        "event_id": event_id,
+        "matched_user_id": chosen["id"],
+        "match_id": match_id,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    })
+
+    return {
+        "match_id": match_id,
+        "matched_user": chosen
+    }
+
 
 # ============ ROOT ============
 

@@ -321,5 +321,156 @@ class TestChatEndpoints:
         print(f"✓ Chat endpoint returned {len(data['messages'])} messages")
 
 
+# ============ WEDDING DAY MODE ENDPOINTS TESTS ============
+class TestWeddingDayMode:
+    """Wedding Day Mode endpoint tests - new feature"""
+    
+    @pytest.fixture
+    def guest_token(self):
+        """Get auth token for guest user (alice@demo.com)"""
+        response = requests.post(f"{BASE_URL}/api/auth/login", json={
+            "email": GUEST_EMAIL,
+            "password": GUEST_PASSWORD
+        })
+        if response.status_code == 200:
+            return response.json()["token"]
+        pytest.skip("Could not get guest token")
+    
+    @pytest.fixture
+    def marcus_token(self):
+        """Get auth token for marcus@demo.com (hasn't used bouquet toss yet)"""
+        response = requests.post(f"{BASE_URL}/api/auth/login", json={
+            "email": GUEST2_EMAIL,
+            "password": GUEST2_PASSWORD
+        })
+        if response.status_code == 200:
+            return response.json()["token"]
+        pytest.skip("Could not get marcus token")
+    
+    def test_wedding_day_mode_endpoint(self, guest_token):
+        """Test /events/wedding-day-mode returns is_wedding_day, event_name, wedding_date
+        Note: Wedding date is 2026-06-15, so is_wedding_day should be false today
+        """
+        response = requests.get(
+            f"{BASE_URL}/api/events/wedding-day-mode",
+            headers={"Authorization": f"Bearer {guest_token}"}
+        )
+        assert response.status_code == 200, f"Wedding day mode failed: {response.text}"
+        data = response.json()
+        
+        # Verify response structure
+        assert "is_wedding_day" in data
+        assert "event_name" in data
+        assert "wedding_date" in data
+        
+        # Since wedding is 2026-06-15, should be false today
+        assert isinstance(data["is_wedding_day"], bool)
+        print(f"✓ Wedding day mode: is_wedding_day={data['is_wedding_day']}, event_name={data['event_name']}, wedding_date={data['wedding_date']}")
+    
+    def test_live_stats_endpoint(self, guest_token):
+        """Test /events/live-stats returns total_guests, total_matches, today_matches, recent_match_names"""
+        response = requests.get(
+            f"{BASE_URL}/api/events/live-stats",
+            headers={"Authorization": f"Bearer {guest_token}"}
+        )
+        assert response.status_code == 200, f"Live stats failed: {response.text}"
+        data = response.json()
+        
+        # Verify response structure
+        assert "total_guests" in data
+        assert "total_matches" in data
+        assert "today_matches" in data
+        assert "recent_match_names" in data
+        
+        # Verify types
+        assert isinstance(data["total_guests"], int)
+        assert isinstance(data["total_matches"], int)
+        assert isinstance(data["today_matches"], int)
+        assert isinstance(data["recent_match_names"], list)
+        
+        print(f"✓ Live stats: guests={data['total_guests']}, matches={data['total_matches']}, today={data['today_matches']}")
+        if data["recent_match_names"]:
+            print(f"  Recent matches: {data['recent_match_names']}")
+    
+    def test_bouquet_toss_alice_already_used(self, guest_token):
+        """Test /bouquet-toss returns 400 for alice who already used her toss"""
+        response = requests.post(
+            f"{BASE_URL}/api/bouquet-toss",
+            headers={"Authorization": f"Bearer {guest_token}"}
+        )
+        # Alice should have already used her toss
+        assert response.status_code == 400, f"Expected 400, got {response.status_code}: {response.text}"
+        data = response.json()
+        assert "already" in data.get("detail", "").lower() or "already used" in data.get("detail", "").lower()
+        print(f"✓ Bouquet toss correctly rejected for alice (already used): {data.get('detail')}")
+    
+    def test_bouquet_toss_marcus_first_use(self, marcus_token):
+        """Test /bouquet-toss for marcus who hasn't used it yet
+        Note: This test may fail if marcus already used his toss in a previous run
+        """
+        response = requests.post(
+            f"{BASE_URL}/api/bouquet-toss",
+            headers={"Authorization": f"Bearer {marcus_token}"}
+        )
+        
+        if response.status_code == 400:
+            # Marcus may have already used toss in a previous test run
+            data = response.json()
+            if "already" in data.get("detail", "").lower():
+                print(f"⚠ Marcus has already used bouquet toss (from previous test run)")
+                pytest.skip("Marcus already used bouquet toss")
+            else:
+                pytest.fail(f"Unexpected 400 error: {data}")
+        
+        if response.status_code == 404:
+            data = response.json()
+            print(f"⚠ No available guests for bouquet toss: {data.get('detail')}")
+            pytest.skip("No available guests for bouquet toss")
+        
+        assert response.status_code == 200, f"Bouquet toss failed for marcus: {response.text}"
+        data = response.json()
+        
+        # Verify response structure
+        assert "match_id" in data
+        assert "matched_user" in data
+        assert isinstance(data["match_id"], str)
+        assert isinstance(data["matched_user"], dict)
+        
+        print(f"✓ Bouquet toss success for marcus!")
+        print(f"  Match ID: {data['match_id']}")
+        print(f"  Matched with: {data['matched_user'].get('name', 'Unknown')}")
+        
+        # Store the match for verification
+        return data
+    
+    def test_bouquet_toss_marcus_second_use_fails(self, marcus_token):
+        """Test /bouquet-toss fails on second attempt (one-time use enforcement)"""
+        # First, try the toss
+        response = requests.post(
+            f"{BASE_URL}/api/bouquet-toss",
+            headers={"Authorization": f"Bearer {marcus_token}"}
+        )
+        
+        # Whether this is first or second use, after this call marcus should have used it
+        if response.status_code == 200:
+            print("  First toss succeeded, attempting second...")
+        elif response.status_code == 400:
+            # Already used
+            data = response.json()
+            if "already" in data.get("detail", "").lower():
+                print(f"✓ Marcus bouquet toss correctly rejected (already used): {data.get('detail')}")
+                return
+        
+        # Now try again - this MUST fail
+        response2 = requests.post(
+            f"{BASE_URL}/api/bouquet-toss",
+            headers={"Authorization": f"Bearer {marcus_token}"}
+        )
+        assert response2.status_code == 400, f"Expected 400 on second toss, got {response2.status_code}"
+        data = response2.json()
+        assert "already" in data.get("detail", "").lower()
+        print(f"✓ Second bouquet toss correctly rejected: {data.get('detail')}")
+
+
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])

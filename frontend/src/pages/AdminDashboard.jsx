@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Users, Copy, Calendar, MapPin, LogOut, Plus, CreditCard, Check } from 'lucide-react';
+import { Users, Copy, Calendar, MapPin, LogOut, Plus, CreditCard, Check, TrendingUp, Sparkles } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
@@ -27,6 +27,8 @@ export default function AdminDashboard() {
   const [eventPrice, setEventPrice] = useState(49.99);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
+  const [liveStats, setLiveStats] = useState(null);
+  const [isWeddingDay, setIsWeddingDay] = useState(false);
   
   const [eventForm, setEventForm] = useState({
     bride_name: '',
@@ -38,6 +40,8 @@ export default function AdminDashboard() {
   useEffect(() => {
     fetchEventData();
     checkPaymentStatus();
+    fetchLiveStats();
+    checkWeddingDay();
     
     // Check if returning from Stripe
     const sessionId = searchParams.get('session_id');
@@ -45,6 +49,24 @@ export default function AdminDashboard() {
       pollPaymentStatus(sessionId);
     }
   }, [searchParams]);
+
+  const fetchLiveStats = async () => {
+    try {
+      const res = await axios.get(`${API}/events/live-stats`);
+      setLiveStats(res.data);
+    } catch (err) {
+      console.error('Failed to fetch live stats:', err);
+    }
+  };
+
+  const checkWeddingDay = async () => {
+    try {
+      const res = await axios.get(`${API}/events/wedding-day-mode`);
+      setIsWeddingDay(res.data.is_wedding_day);
+    } catch (err) {
+      console.error('Failed to check wedding day:', err);
+    }
+  };
 
   const checkPaymentStatus = async () => {
     try {
@@ -283,6 +305,58 @@ export default function AdminDashboard() {
                 <p className="font-sans text-xs text-muted-foreground tracking-wide uppercase mt-1">Matches Made</p>
               </div>
             </div>
+
+            {/* Wedding Day Banner */}
+            {isWeddingDay && (
+              <div className="card-modern p-5 bg-foreground text-white" data-testid="admin-wedding-day-banner">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center wedding-day-pulse">
+                    <Sparkles className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <p className="font-serif text-lg tracking-tight">It's the big day!</p>
+                    <p className="font-sans text-xs text-white/70">Wedding Day Mode is active for your guests</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Live Activity Stats */}
+            {liveStats && (
+              <div className="card-modern p-6" data-testid="admin-live-stats">
+                <div className="flex items-center gap-2 mb-4">
+                  <TrendingUp className="w-4 h-4 text-foreground/70" />
+                  <h3 className="font-serif text-lg text-foreground tracking-tight">Live Activity</h3>
+                </div>
+                <div className="grid grid-cols-3 gap-4 mb-4">
+                  <div className="text-center">
+                    <p className="font-serif text-2xl text-foreground">{liveStats.total_guests}</p>
+                    <p className="font-sans text-xs text-muted-foreground">Guests</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="font-serif text-2xl text-foreground">{liveStats.total_matches}</p>
+                    <p className="font-sans text-xs text-muted-foreground">Matches</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="font-serif text-2xl text-foreground">{liveStats.today_matches}</p>
+                    <p className="font-sans text-xs text-muted-foreground">Today</p>
+                  </div>
+                </div>
+                {liveStats.recent_match_names?.length > 0 && (
+                  <div className="border-t border-border/30 pt-4">
+                    <p className="font-sans text-xs text-muted-foreground tracking-wide uppercase mb-2">Recent Matches</p>
+                    <div className="space-y-1">
+                      {liveStats.recent_match_names.map((name, i) => (
+                        <p key={i} className="font-sans text-sm text-foreground">
+                          <Sparkles className="w-3 h-3 inline mr-2 text-muted-foreground" />
+                          {name}
+                        </p>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Tips */}
             <div className="card-modern p-6 bg-muted/20">

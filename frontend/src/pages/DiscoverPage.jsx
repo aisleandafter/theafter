@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { X, User, MessageCircle, LogOut } from 'lucide-react';
+import { X, User, MessageCircle, LogOut, Sparkles, TrendingUp } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
 import { Dialog, DialogContent } from '../components/ui/dialog';
@@ -11,6 +11,39 @@ import { toast } from 'sonner';
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 const LOGO_URL = "https://customer-assets.emergentagent.com/job_14cfd5a5-e530-4fa4-8620-3c90f05d18d5/artifacts/mw7crcio_logo.png";
 
+const CONFETTI_COLORS = ['#0a0a0a', '#d4d4d4', '#a3a3a3', '#737373', '#e5e5e5'];
+
+function ConfettiEffect() {
+  const pieces = Array.from({ length: 30 }, (_, i) => ({
+    id: i,
+    left: `${Math.random() * 100}%`,
+    delay: `${Math.random() * 2}s`,
+    color: CONFETTI_COLORS[Math.floor(Math.random() * CONFETTI_COLORS.length)],
+    size: 6 + Math.random() * 6,
+    rotation: Math.random() * 360,
+  }));
+
+  return (
+    <div className="confetti-container">
+      {pieces.map((p) => (
+        <div
+          key={p.id}
+          className="confetti-piece"
+          style={{
+            left: p.left,
+            animationDelay: p.delay,
+            backgroundColor: p.color,
+            width: `${p.size}px`,
+            height: `${p.size}px`,
+            borderRadius: Math.random() > 0.5 ? '50%' : '2px',
+            transform: `rotate(${p.rotation}deg)`,
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
 export default function DiscoverPage() {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
@@ -20,10 +53,38 @@ export default function DiscoverPage() {
   const [swipeClass, setSwipeClass] = useState('');
   const [showMatch, setShowMatch] = useState(false);
   const [matchedUser, setMatchedUser] = useState(null);
+  const [isWeddingDay, setIsWeddingDay] = useState(false);
+  const [eventName, setEventName] = useState('');
+  const [liveStats, setLiveStats] = useState(null);
+  const [showConfetti, setShowConfetti] = useState(false);
+  const [bouquetUsed, setBouquetUsed] = useState(false);
+  const [bouquetLoading, setBouquetLoading] = useState(false);
+  const [isBouquetMatch, setIsBouquetMatch] = useState(false);
 
   useEffect(() => {
     fetchProfiles();
+    checkWeddingDay();
+    fetchLiveStats();
   }, []);
+
+  const checkWeddingDay = async () => {
+    try {
+      const res = await axios.get(`${API}/events/wedding-day-mode`);
+      setIsWeddingDay(res.data.is_wedding_day);
+      setEventName(res.data.event_name || '');
+    } catch (err) {
+      console.error('Failed to check wedding day:', err);
+    }
+  };
+
+  const fetchLiveStats = async () => {
+    try {
+      const res = await axios.get(`${API}/events/live-stats`);
+      setLiveStats(res.data);
+    } catch (err) {
+      console.error('Failed to fetch live stats:', err);
+    }
+  };
 
   const fetchProfiles = async () => {
     try {
@@ -35,6 +96,11 @@ export default function DiscoverPage() {
       setIsLoading(false);
     }
   };
+
+  const triggerConfetti = useCallback(() => {
+    setShowConfetti(true);
+    setTimeout(() => setShowConfetti(false), 3500);
+  }, []);
 
   const handleSwipe = async (action) => {
     if (currentIndex >= profiles.length) return;
@@ -50,7 +116,12 @@ export default function DiscoverPage() {
 
       if (res.data.is_match) {
         setMatchedUser(res.data.match.matched_user);
-        setTimeout(() => setShowMatch(true), 400);
+        setIsBouquetMatch(false);
+        setTimeout(() => {
+          setShowMatch(true);
+          if (isWeddingDay) triggerConfetti();
+        }, 400);
+        fetchLiveStats();
       }
     } catch (err) {
       console.error('Swipe failed:', err);
@@ -62,6 +133,31 @@ export default function DiscoverPage() {
     }, 400);
   };
 
+  const handleBouquetToss = async () => {
+    setBouquetLoading(true);
+    try {
+      const res = await axios.post(`${API}/bouquet-toss`);
+      setBouquetUsed(true);
+      setMatchedUser(res.data.matched_user);
+      setIsBouquetMatch(true);
+      setShowMatch(true);
+      triggerConfetti();
+      fetchLiveStats();
+      toast.success('The bouquet found someone for you!');
+    } catch (err) {
+      if (err.response?.status === 400 && err.response?.data?.detail?.includes('already used')) {
+        setBouquetUsed(true);
+        toast.error("You've already used your bouquet toss!");
+      } else if (err.response?.status === 404) {
+        toast.error('No available guests right now. Try again later!');
+      } else {
+        toast.error('Bouquet toss failed. Try again!');
+      }
+    } finally {
+      setBouquetLoading(false);
+    }
+  };
+
   const currentProfile = profiles[currentIndex];
 
   const handleLogout = () => {
@@ -71,6 +167,8 @@ export default function DiscoverPage() {
 
   return (
     <div className="mobile-container min-h-screen bg-white relative noise-bg" data-testid="discover-page">
+      {showConfetti && <ConfettiEffect />}
+
       {/* Header */}
       <header className="p-4 flex justify-between items-center sticky top-0 glass-header z-20">
         <img src={LOGO_URL} alt="aisle & after" className="h-10" />
@@ -95,6 +193,41 @@ export default function DiscoverPage() {
           </Button>
         </div>
       </header>
+
+      {/* Wedding Day Banner */}
+      {isWeddingDay && (
+        <div className="mx-4 mt-3 p-4 bg-foreground text-white rounded-2xl animate-fade-up" data-testid="wedding-day-banner">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center wedding-day-pulse">
+              <Sparkles className="w-5 h-5" />
+            </div>
+            <div className="flex-1">
+              <p className="font-serif text-lg tracking-tight">It's the big day!</p>
+              <p className="font-sans text-xs text-white/70">{eventName}'s wedding</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Live Stats Bar */}
+      {liveStats && (
+        <div className="mx-4 mt-3 p-3 card-modern flex items-center justify-between" data-testid="live-stats-bar">
+          <div className="flex items-center gap-2">
+            <TrendingUp className="w-4 h-4 text-muted-foreground" />
+            <span className="font-sans text-xs text-muted-foreground">
+              <span className="text-foreground font-medium">{liveStats.total_guests}</span> guests
+            </span>
+          </div>
+          <div className="w-px h-4 bg-border/50" />
+          <span className="font-sans text-xs text-muted-foreground">
+            <span className="text-foreground font-medium">{liveStats.total_matches}</span> matches
+          </span>
+          <div className="w-px h-4 bg-border/50" />
+          <span className="font-sans text-xs text-muted-foreground">
+            <span className="text-foreground font-medium">{liveStats.today_matches}</span> today
+          </span>
+        </div>
+      )}
 
       {/* Main Content */}
       <main className="p-4 pb-36">
@@ -131,12 +264,10 @@ export default function DiscoverPage() {
 
             {/* Profile Details */}
             <div className="p-6 space-y-4">
-              {/* Bio */}
               {currentProfile.bio && (
                 <p className="font-serif text-lg text-foreground leading-relaxed">{currentProfile.bio}</p>
               )}
 
-              {/* Fun Fact */}
               {currentProfile.fun_fact && (
                 <div className="bg-muted/50 p-4 rounded-lg border-l-2 border-foreground/10">
                   <p className="font-serif text-foreground/70 italic">
@@ -145,14 +276,10 @@ export default function DiscoverPage() {
                 </div>
               )}
 
-              {/* Interests */}
               {currentProfile.interests?.length > 0 && (
                 <div className="flex flex-wrap gap-2 pt-2">
                   {currentProfile.interests.map(interest => (
-                    <span 
-                      key={interest}
-                      className="interest-tag"
-                    >
+                    <span key={interest} className="interest-tag">
                       {interest}
                     </span>
                   ))}
@@ -161,7 +288,7 @@ export default function DiscoverPage() {
             </div>
           </div>
         ) : (
-          <div className="h-[500px] flex flex-col items-center justify-center text-center px-4">
+          <div className="h-[400px] flex flex-col items-center justify-center text-center px-4">
             <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-6">
               <svg className="w-8 h-8 text-muted-foreground/40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                 <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
@@ -178,6 +305,43 @@ export default function DiscoverPage() {
             >
               View Your Matches
             </Button>
+          </div>
+        )}
+
+        {/* Bouquet Toss Section */}
+        {!isLoading && !bouquetUsed && (
+          <div className="mt-6 card-modern p-5 text-center" data-testid="bouquet-toss-section">
+            <div className="w-12 h-12 mx-auto bg-foreground rounded-full flex items-center justify-center mb-3">
+              <Sparkles className="w-6 h-6 text-white" />
+            </div>
+            <h3 className="font-serif text-xl text-foreground tracking-tight mb-1">Bouquet Toss</h3>
+            <p className="font-sans text-xs text-muted-foreground mb-4">
+              Feeling lucky? Get randomly matched with another guest. One toss per event!
+            </p>
+            <Button
+              onClick={handleBouquetToss}
+              disabled={bouquetLoading}
+              className="bg-foreground hover:bg-foreground/90 rounded-full btn-pill h-11 px-6"
+              data-testid="bouquet-toss-btn"
+            >
+              {bouquetLoading ? (
+                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              ) : (
+                <>
+                  <Sparkles className="w-4 h-4 mr-2" />
+                  Toss the Bouquet
+                </>
+              )}
+            </Button>
+          </div>
+        )}
+
+        {bouquetUsed && (
+          <div className="mt-6 card-modern p-4 text-center bg-muted/20" data-testid="bouquet-toss-used">
+            <p className="font-sans text-sm text-muted-foreground">
+              <Sparkles className="w-4 h-4 inline mr-1" />
+              You've used your bouquet toss!
+            </p>
           </div>
         )}
       </main>
@@ -212,16 +376,25 @@ export default function DiscoverPage() {
           <div className="text-center space-y-8 py-6">
             <div className="match-animation">
               <div className="w-20 h-20 mx-auto bg-foreground rounded-full flex items-center justify-center">
-                <svg className="w-10 h-10 text-white" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-                </svg>
+                {isBouquetMatch ? (
+                  <Sparkles className="w-10 h-10 text-white" />
+                ) : (
+                  <svg className="w-10 h-10 text-white" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                  </svg>
+                )}
               </div>
             </div>
             
             <div className="space-y-2">
-              <h2 className="font-serif text-4xl text-foreground tracking-tight">It's a Match</h2>
+              <h2 className="font-serif text-4xl text-foreground tracking-tight">
+                {isBouquetMatch ? 'Bouquet Caught!' : "It's a Match"}
+              </h2>
               <p className="font-sans text-muted-foreground">
-                You and {matchedUser?.name} liked each other
+                {isBouquetMatch
+                  ? `The bouquet landed on ${matchedUser?.name}!`
+                  : `You and ${matchedUser?.name} liked each other`
+                }
               </p>
             </div>
 

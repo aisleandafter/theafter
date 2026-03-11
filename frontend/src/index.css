@@ -116,6 +116,38 @@ body {
     animation: match-pop 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
+/* Confetti particles */
+@keyframes confetti-fall {
+    0% { transform: translateY(-100vh) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+}
+
+.confetti-container {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 100;
+    overflow: hidden;
+}
+
+.confetti-piece {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    top: -10px;
+    animation: confetti-fall 3s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+/* Wedding day banner pulse */
+@keyframes subtle-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+.wedding-day-pulse {
+    animation: subtle-pulse 2s ease-in-out infinite;
+}
+
 /* Apple-style easing */
 .ease-apple {
     transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
