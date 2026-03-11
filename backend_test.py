@@ -4,7 +4,7 @@ import json
 from datetime import datetime
 
 class WeddingAppTester:
-    def __init__(self, base_url="https://love-at-rsvp.preview.emergentagent.com/api"):
+    def __init__(self, base_url="https://love-at-aisle.preview.emergentagent.com/api"):
         self.base_url = base_url
         self.host_token = None
         self.guest_token = None

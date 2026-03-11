@@ -12,7 +12,7 @@ import uuid
 from datetime import datetime, timezone
 import jwt
 import bcrypt
-from emergentintegrations.llm.chat import LlmChat, UserMessage
+import anthropic
 from emergentintegrations.payments.stripe.checkout import StripeCheckout, CheckoutSessionResponse, CheckoutStatusResponse, CheckoutSessionRequest
 
 ROOT_DIR = Path(__file__).parent
@@ -28,7 +28,8 @@ JWT_SECRET = os.environ.get('JWT_SECRET', 'botanical-serendipity-secret')
 JWT_ALGORITHM = "HS256"
 
 # LLM Settings
-EMERGENT_LLM_KEY = os.environ.get('EMERGENT_LLM_KEY')
+ANTHROPIC_API_KEY = os.environ['ANTHROPIC_API_KEY']
+anthropic_client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
 
 # Stripe Settings
 STRIPE_API_KEY = os.environ.get('STRIPE_API_KEY')
@@ -572,31 +573,29 @@ async def get_conversation_starters(data: ConversationStarterRequest, user = Dep
     current_user = await db.users.find_one({"id": user["id"]}, {"_id": 0, "password": 0})
     
     try:
-        chat = LlmChat(
-            api_key=EMERGENT_LLM_KEY,
-            session_id=f"starters-{data.match_id}",
-            system_message="You are a friendly matchmaker at a wedding. Generate 3 creative, fun conversation starters for two guests who just matched. Keep them light, romantic, and wedding-themed. Return only the 3 starters as a numbered list, nothing else."
-        ).with_model("anthropic", "claude-sonnet-4-5-20250929")
-        
         prompt = f"""Generate conversation starters for:
 Person 1: {current_user.get('name', 'Guest')}, interests: {', '.join(current_user.get('interests', []))}, fun fact: {current_user.get('fun_fact', 'N/A')}
 Person 2: {other_user.get('name', 'Guest')}, interests: {', '.join(other_user.get('interests', []))}, fun fact: {other_user.get('fun_fact', 'N/A')}
 They're both attending the same wedding."""
+
+        message = anthropic_client.messages.create(
+            model="claude-sonnet-4-5-20250929",
+            max_tokens=300,
+            system="You are a friendly matchmaker at a wedding. Generate 3 creative, fun conversation starters for two guests who just matched. Keep them light, romantic, and wedding-themed. Return only the 3 starters as a numbered list, nothing else.",
+            messages=[{"role": "user", "content": prompt}]
+        )
         
-        response = await chat.send_message(UserMessage(text=prompt))
-        
-        # Parse response into list
-        lines = [l.strip() for l in response.split('\n') if l.strip() and l.strip()[0].isdigit()]
+        response_text = message.content[0].text
+        lines = [l.strip() for l in response_text.split('\n') if l.strip() and l.strip()[0].isdigit()]
         starters = [l.split('.', 1)[1].strip() if '.' in l else l for l in lines[:3]]
         
         return {"starters": starters}
     except Exception as e:
         logging.error(f"AI error: {e}")
-        # Fallback starters
         return {"starters": [
-            f"I noticed we're both friends of the happy couple! How do you know them?",
-            f"What's your favorite wedding memory so far?",
-            f"If you could give the newlyweds one piece of advice, what would it be?"
+            "I noticed we're both friends of the happy couple! How do you know them?",
+            "What's your favorite wedding memory so far?",
+            "If you could give the newlyweds one piece of advice, what would it be?"
         ]}
 
 @api_router.post("/ai/compatibility")
@@ -613,19 +612,18 @@ async def analyze_compatibility(data: ConversationStarterRequest, user = Depends
     current_user = await db.users.find_one({"id": user["id"]}, {"_id": 0, "password": 0})
     
     try:
-        chat = LlmChat(
-            api_key=EMERGENT_LLM_KEY,
-            session_id=f"compat-{data.match_id}",
-            system_message="You are a romantic matchmaker. Analyze compatibility between two wedding guests. Be positive, fun, and romantic. Keep response under 100 words."
-        ).with_model("anthropic", "claude-sonnet-4-5-20250929")
-        
         prompt = f"""Analyze compatibility:
 Person 1: {current_user.get('name')}, {current_user.get('age', 'unknown age')}, interests: {current_user.get('interests', [])}, bio: {current_user.get('bio', 'N/A')}
 Person 2: {other_user.get('name')}, {other_user.get('age', 'unknown age')}, interests: {other_user.get('interests', [])}, bio: {other_user.get('bio', 'N/A')}"""
+
+        message = anthropic_client.messages.create(
+            model="claude-sonnet-4-5-20250929",
+            max_tokens=200,
+            system="You are a romantic matchmaker. Analyze compatibility between two wedding guests. Be positive, fun, and romantic. Keep response under 100 words.",
+            messages=[{"role": "user", "content": prompt}]
+        )
         
-        response = await chat.send_message(UserMessage(text=prompt))
-        
-        return {"analysis": response}
+        return {"analysis": message.content[0].text}
     except Exception as e:
         logging.error(f"AI error: {e}")
         return {"analysis": "You both share a love for celebration and good company - the perfect recipe for wedding magic! Your shared interests could spark something wonderful."}
