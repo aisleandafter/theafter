@@ -14,24 +14,23 @@ Build a dating experience that matches the single guests of the bride and groom.
 - [x] Chat messaging with WebSocket real-time broadcast
 - [x] AI conversation starters + compatibility (Anthropic Claude SDK)
 - [x] Wedding Day Mode detection
-- [x] Live activity stats (guests, matches, today, recent names)
+- [x] Live activity stats
 - [x] Bouquet Toss random matching (one-time per guest)
-- [x] Public countdown endpoint
+- [x] Public countdown endpoint + QR code generator
 - [x] Photo upload/serve via Emergent object storage
 - [x] In-app notification system (match notifications)
-- [x] Promo code validation + 100% discount bypass
 
 ### Frontend (React + Tailwind + Shadcn UI)
 - [x] Landing page with event code entry
 - [x] Auth pages (login/register for host/guest)
 - [x] Profile setup wizard with cloud photo upload
-- [x] Discover/swipe page with live stats + bell notifications
-- [x] Matches list with photo support
+- [x] Discover/swipe page with live stats + notification bell
+- [x] Matches list with real photos
 - [x] Chat with WebSocket + AI suggestions
-- [x] Admin dashboard with promo codes, live activity, countdown sharing
-- [x] Countdown page (/countdown/:eventCode) - shareable, public
-- [x] Confetti + Wedding Day banner
-- [x] Bouquet Toss
+- [x] Admin dashboard with promo codes, live activity, QR download, countdown sharing
+- [x] Countdown page with QR code (/countdown/:eventCode)
+- [x] Confetti + Wedding Day banner + Bouquet Toss
+- [x] Consistent branding copy across all pages
 
 ## Tech Stack
 - Frontend: React, Tailwind CSS, Shadcn UI
@@ -42,27 +41,19 @@ Build a dating experience that matches the single guests of the bride and groom.
 - Auth: JWT
 - Real-time: WebSocket (native FastAPI)
 - Storage: Emergent Object Storage (photos)
+- QR: qrcode (Python)
 
-## Key API Endpoints
-- Auth: POST /api/auth/register, /api/auth/login, GET /api/auth/me
-- Payments: POST /api/payments/checkout (supports promo_code), GET /api/payments/status/{id}, GET /api/payments/check
-- Promo: POST /api/promo/validate
-- Events: POST /api/events/create, /api/events/join, GET /api/events/current, /api/events/{id}/stats
-- Wedding: GET /api/events/wedding-day-mode, /api/events/live-stats
-- Countdown: GET /api/countdown/{event_code} (PUBLIC)
-- Profile: PUT /api/profile, GET /api/profile/{user_id}
-- Photos: POST /api/photos/upload, GET /api/photos/{file_id} (PUBLIC)
-- Discovery: GET /api/discover, POST /api/swipe, POST /api/bouquet-toss
-- Matches: GET /api/matches
-- Chat: GET /api/chat/{match_id}, POST /api/chat/send, WS /ws/chat/{match_id}
-- AI: POST /api/ai/conversation-starters, /api/ai/compatibility
-- Notifications: GET /api/notifications, POST /api/notifications/read-all
+## Key Routes
+- / - Landing page
+- /countdown/:eventCode - Public wedding countdown with QR
+- /auth - Login/register
+- /profile-setup - Guest profile wizard with photo upload
+- /discover - Swipe/match with live stats + bell
+- /matches - Match list
+- /chat/:matchId - Chat with WebSocket
+- /admin - Host dashboard
 
 ## Prioritized Backlog
-
-### P1 (High)
-- [ ] QR code generator for countdown page (shareable on invitations)
-- [ ] Text copy branding pass across all pages
 
 ### P2 (Medium)
 - [ ] Multi-photo gallery on profiles
@@ -73,18 +64,12 @@ Build a dating experience that matches the single guests of the bride and groom.
 ### P3 (Low)
 - [ ] Guest check-in at event
 - [ ] Shareable match stories
-- [ ] Host analytics dashboard
+- [ ] Host analytics dashboard (charts)
 
 ## Test Credentials
-- Event Code: EULF18
+- Event Code: EULF18 (Emma & James)
 - Guest: alice@demo.com / demo123
 - Guest: marcus@demo.com / demo123
 - Guest: sophie@demo.com / demo123
 - Host: testhost@demo.com / demo123
 - Promo codes: LOVE2026 (50%), WEDDING (25%), FREEAISLE (free)
-
-## Notes
-- Anthropic API key integrated, requires account credits for AI generation
-- Photos are circle-cropped server-side and served publicly at /api/photos/{id}
-- Promo code FREEAISLE bypasses Stripe entirely (instant paid_free=true)
-- WebSocket reconnects automatically on disconnect (3s delay)
