@@ -9,7 +9,6 @@ import { toast } from 'sonner';
 import { format } from 'date-fns';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
-const LOGO_URL = "https://customer-assets.emergentagent.com/job_14cfd5a5-e530-4fa4-8620-3c90f05d18d5/artifacts/mw7crcio_logo.png";
 
 export default function ChatPage() {
   const navigate = useNavigate();
@@ -133,7 +132,7 @@ export default function ChatPage() {
   return (
     <div className="mobile-container min-h-screen bg-white flex flex-col" data-testid="chat-page">
       {/* Header */}
-      <header className="p-4 flex items-center gap-4 bg-white/90 backdrop-blur border-b border-border/50 sticky top-0 z-20">
+      <header className="p-4 flex items-center gap-4 glass-header sticky top-0 z-20">
         <Button
           variant="ghost"
           size="sm"
@@ -145,7 +144,7 @@ export default function ChatPage() {
         </Button>
         
         <div className="flex items-center gap-3 flex-1">
-          <div className="w-10 h-10 overflow-hidden bg-muted/30">
+          <div className="w-10 h-10 rounded-full overflow-hidden bg-muted/30">
             {matchInfo?.matched_user?.photo_url ? (
               <img 
                 src={matchInfo.matched_user.photo_url}
@@ -159,10 +158,10 @@ export default function ChatPage() {
             )}
           </div>
           <div>
-            <h2 className="text-lg text-foreground tracking-tight">
+            <h2 className="font-serif text-lg text-foreground tracking-tight">
               {matchInfo?.matched_user?.name || 'Chat'}
             </h2>
-            <p className="text-xs text-muted-foreground">
+            <p className="font-sans text-xs text-muted-foreground">
               {matchInfo?.matched_user?.relationship_to_couple || 'Wedding Guest'}
             </p>
           </div>
@@ -177,7 +176,7 @@ export default function ChatPage() {
           data-testid="ai-starters-btn"
         >
           {loadingStarters ? (
-            <div className="w-5 h-5 border border-foreground border-t-transparent rounded-full animate-spin" />
+            <div className="w-5 h-5 border-2 border-foreground/20 border-t-foreground rounded-full animate-spin" />
           ) : (
             <Wand2 className="w-5 h-5" />
           )}
@@ -186,8 +185,8 @@ export default function ChatPage() {
 
       {/* AI Conversation Starters */}
       {showStarters && starters.length > 0 && (
-        <div className="p-4 bg-muted/20 border-b border-border/50 space-y-2 animate-fade-in">
-          <div className="flex items-center gap-2 text-xs text-muted-foreground tracking-wide uppercase mb-3">
+        <div className="p-4 bg-muted/30 border-b border-border/30 space-y-2 animate-fade-in">
+          <div className="flex items-center gap-2 font-sans text-xs text-muted-foreground tracking-wide uppercase mb-3">
             <Wand2 className="w-3 h-3" />
             <span>AI Suggestions</span>
           </div>
@@ -195,7 +194,7 @@ export default function ChatPage() {
             <button
               key={i}
               onClick={() => selectStarter(starter)}
-              className="w-full text-left p-3 bg-white text-sm text-foreground hover:bg-muted/30 transition-colors border border-border/50"
+              className="w-full text-left p-3 bg-white font-sans text-sm text-foreground hover:bg-muted/30 transition-colors rounded-xl border border-border/30"
               data-testid={`starter-${i}`}
             >
               {starter}
@@ -208,7 +207,7 @@ export default function ChatPage() {
       <main className="flex-1 p-4 overflow-y-auto">
         {isLoading ? (
           <div className="h-full flex items-center justify-center">
-            <div className="w-6 h-6 border border-foreground border-t-transparent rounded-full animate-spin" />
+            <div className="w-6 h-6 border-2 border-foreground/20 border-t-foreground rounded-full animate-spin" />
           </div>
         ) : messages.length > 0 ? (
           <div className="space-y-3">
@@ -220,8 +219,8 @@ export default function ChatPage() {
                   className={`flex ${isSent ? 'justify-end' : 'justify-start'}`}
                 >
                   <div className={`chat-bubble ${isSent ? 'chat-bubble-sent' : 'chat-bubble-received'}`}>
-                    <p>{msg.content}</p>
-                    <p className={`text-xs mt-1 ${isSent ? 'text-white/60' : 'text-muted-foreground'}`}>
+                    <p className="font-sans text-sm">{msg.content}</p>
+                    <p className={`font-sans text-xs mt-1 ${isSent ? 'text-white/60' : 'text-muted-foreground'}`}>
                       {formatTime(msg.created_at)}
                     </p>
                   </div>
@@ -232,20 +231,20 @@ export default function ChatPage() {
           </div>
         ) : (
           <div className="h-full flex flex-col items-center justify-center text-center">
-            <div className="w-14 h-14 border border-border flex items-center justify-center mb-4">
-              <svg className="w-6 h-6 text-muted-foreground/30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+            <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">
+              <svg className="w-7 h-7 text-muted-foreground/30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                 <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
               </svg>
             </div>
-            <h3 className="text-lg text-foreground mb-2 tracking-tight">Say Hello</h3>
-            <p className="text-sm text-muted-foreground mb-4">
+            <h3 className="font-serif text-xl text-foreground mb-2 tracking-tight">Say Hello</h3>
+            <p className="font-sans text-sm text-muted-foreground mb-4">
               Start the conversation with {matchInfo?.matched_user?.name}
             </p>
             <Button
               variant="outline"
               size="sm"
               onClick={fetchConversationStarters}
-              className="text-foreground border-border rounded-none"
+              className="rounded-full font-sans btn-pill"
               data-testid="get-starters-btn"
             >
               <Wand2 className="w-4 h-4 mr-2" />
@@ -256,19 +255,19 @@ export default function ChatPage() {
       </main>
 
       {/* Message Input */}
-      <div className="p-4 bg-white/90 backdrop-blur border-t border-border/50">
+      <div className="p-4 glass-header border-t border-border/30">
         <form onSubmit={handleSend} className="flex gap-3">
           <Input
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
             placeholder="Type a message..."
-            className="flex-1 h-12 bg-muted/20 border-border/50 focus:border-foreground rounded-none"
+            className="flex-1 h-12 bg-muted/30 border-border/30 focus:border-foreground rounded-full font-sans px-5"
             data-testid="message-input"
           />
           <Button
             type="submit"
             disabled={!newMessage.trim() || isSending}
-            className="h-12 w-12 bg-foreground hover:bg-foreground/90 rounded-none p-0"
+            className="h-12 w-12 bg-foreground hover:bg-foreground/90 rounded-full p-0"
             data-testid="send-btn"
           >
             {isSending ? (

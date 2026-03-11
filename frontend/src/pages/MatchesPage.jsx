@@ -40,9 +40,9 @@ export default function MatchesPage() {
   };
 
   return (
-    <div className="mobile-container min-h-screen bg-white" data-testid="matches-page">
+    <div className="mobile-container min-h-screen bg-white noise-bg" data-testid="matches-page">
       {/* Header */}
-      <header className="p-4 flex items-center gap-4 sticky top-0 bg-white/90 backdrop-blur z-20 border-b border-border/50">
+      <header className="p-4 flex items-center gap-4 sticky top-0 glass-header z-20">
         <Button
           variant="ghost"
           size="sm"
@@ -56,12 +56,12 @@ export default function MatchesPage() {
       </header>
 
       {/* Content */}
-      <main className="p-4">
-        <h1 className="text-2xl text-foreground tracking-tight mb-6">Your Matches</h1>
+      <main className="p-4 pb-28">
+        <h1 className="font-serif text-2xl text-foreground tracking-tight mb-6">Your Matches</h1>
         
         {isLoading ? (
           <div className="h-64 flex items-center justify-center">
-            <div className="w-6 h-6 border border-foreground border-t-transparent rounded-full animate-spin" />
+            <div className="w-6 h-6 border-2 border-foreground/20 border-t-foreground rounded-full animate-spin" />
           </div>
         ) : matches.length > 0 ? (
           <div className="space-y-3">
@@ -69,11 +69,11 @@ export default function MatchesPage() {
               <button
                 key={match.match_id}
                 onClick={() => navigate(`/chat/${match.match_id}`)}
-                className="w-full bg-white border border-border/50 p-4 flex items-center gap-4 hover:border-border transition-colors text-left card-hover"
+                className="w-full card-modern p-4 flex items-center gap-4 text-left hover-lift"
                 data-testid={`match-${match.match_id}`}
               >
                 {/* Avatar */}
-                <div className="w-14 h-14 overflow-hidden bg-muted/30 flex-shrink-0">
+                <div className="w-14 h-14 rounded-full overflow-hidden bg-muted/30 flex-shrink-0">
                   {match.matched_user?.photo_url ? (
                     <img 
                       src={match.matched_user.photo_url}
@@ -90,16 +90,16 @@ export default function MatchesPage() {
                 {/* Info */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between mb-1">
-                    <h3 className="text-lg text-foreground tracking-tight truncate">
+                    <h3 className="font-serif text-lg text-foreground tracking-tight truncate">
                       {match.matched_user?.name}
                     </h3>
                     {match.last_message && (
-                      <span className="text-xs text-muted-foreground">
+                      <span className="font-sans text-xs text-muted-foreground">
                         {formatTime(match.last_message.created_at)}
                       </span>
                     )}
                   </div>
-                  <p className="text-sm text-muted-foreground truncate">
+                  <p className="font-sans text-sm text-muted-foreground truncate">
                     {match.last_message 
                       ? match.last_message.content
                       : 'Start a conversation'
@@ -114,18 +114,18 @@ export default function MatchesPage() {
           </div>
         ) : (
           <div className="h-64 flex flex-col items-center justify-center text-center px-4">
-            <div className="w-14 h-14 border border-border flex items-center justify-center mb-4">
-              <svg className="w-6 h-6 text-muted-foreground/30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+            <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">
+              <svg className="w-7 h-7 text-muted-foreground/30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                 <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
               </svg>
             </div>
-            <h3 className="text-xl text-foreground mb-2 tracking-tight">No Matches Yet</h3>
-            <p className="text-muted-foreground text-sm mb-6">
+            <h3 className="font-serif text-2xl text-foreground mb-2 tracking-tight">No Matches Yet</h3>
+            <p className="font-sans text-sm text-muted-foreground mb-6">
               Keep swiping to find your perfect match
             </p>
             <Button
               onClick={() => navigate('/discover')}
-              className="bg-foreground hover:bg-foreground/90 rounded-none"
+              className="bg-foreground hover:bg-foreground/90 rounded-full btn-pill h-12 px-8"
               data-testid="discover-btn"
             >
               Start Discovering
@@ -134,11 +134,11 @@ export default function MatchesPage() {
         )}
       </main>
 
-      {/* Bottom Nav */}
-      <nav className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-white/90 backdrop-blur border border-border px-8 py-3 z-10">
+      {/* Bottom Nav - Floating rounded */}
+      <nav className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-white/90 backdrop-blur-xl border border-border/40 rounded-full px-8 py-3 shadow-medium z-10">
         <div className="flex items-center gap-8">
           <button 
-            className="p-2 text-muted-foreground hover:text-foreground"
+            className="p-2 text-muted-foreground hover:text-foreground transition-colors"
             onClick={() => navigate('/discover')}
             data-testid="nav-discover"
           >
@@ -154,7 +154,7 @@ export default function MatchesPage() {
             <MessageCircle className="w-5 h-5" />
           </button>
           <button 
-            className="p-2 text-muted-foreground hover:text-foreground"
+            className="p-2 text-muted-foreground hover:text-foreground transition-colors"
             onClick={() => navigate('/profile-setup')}
             data-testid="nav-profile"
           >

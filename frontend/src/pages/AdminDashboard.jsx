@@ -76,7 +76,6 @@ export default function AdminDashboard() {
         setPaymentSuccess(true);
         setIsProcessingPayment(false);
         toast.success('Payment successful! You can now create your event.');
-        // Clean URL
         window.history.replaceState({}, document.title, window.location.pathname);
         return;
       } else if (res.data.status === 'expired') {
@@ -86,7 +85,6 @@ export default function AdminDashboard() {
         return;
       }
 
-      // Continue polling
       setTimeout(() => pollPaymentStatus(sessionId, attempts + 1), pollInterval);
     } catch (err) {
       console.error('Error checking payment:', err);
@@ -120,8 +118,11 @@ export default function AdminDashboard() {
         origin_url: window.location.origin
       });
       
-      // Redirect to Stripe Checkout
-      window.location.href = res.data.checkout_url;
+      // Open Stripe Checkout in new tab to avoid proxy/iframe issues
+      const stripeWindow = window.open(res.data.checkout_url, '_blank');
+      if (!stripeWindow) {
+        window.location.href = res.data.checkout_url;
+      }
     } catch (err) {
       toast.error(err.response?.data?.detail || 'Failed to initiate payment');
       setIsProcessingPayment(false);
@@ -170,266 +171,269 @@ export default function AdminDashboard() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="w-8 h-8 border border-foreground border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-foreground/20 border-t-foreground rounded-full animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-white" data-testid="admin-dashboard">
+    <div className="mobile-container min-h-screen bg-white noise-bg" data-testid="admin-dashboard">
       {/* Header */}
-      <header className="bg-white/90 backdrop-blur border-b border-border/50 sticky top-0 z-20">
-        <div className="max-w-4xl mx-auto p-4 flex justify-between items-center">
-          <img src={LOGO_URL} alt="aisle & after" className="h-12" />
-          <Button
-            variant="ghost"
-            onClick={handleLogout}
-            className="text-muted-foreground hover:text-foreground text-sm tracking-wide"
-            data-testid="logout-btn"
-          >
-            <LogOut className="w-4 h-4 mr-2" />
-            Logout
-          </Button>
-        </div>
+      <header className="p-4 flex justify-between items-center sticky top-0 glass-header z-20">
+        <img src={LOGO_URL} alt="aisle & after" className="h-10" />
+        <Button
+          variant="ghost"
+          onClick={handleLogout}
+          className="text-muted-foreground hover:text-foreground font-sans text-sm tracking-wide"
+          data-testid="logout-btn"
+        >
+          <LogOut className="w-4 h-4 mr-2" />
+          Logout
+        </Button>
       </header>
 
-      <main className="max-w-4xl mx-auto p-6 space-y-8">
-        <div className="space-y-2">
-          <h1 className="text-3xl text-foreground tracking-tight">Host Dashboard</h1>
-          <p className="text-muted-foreground">Manage your wedding matching experience</p>
+      <main className="p-6 space-y-8">
+        <div className="space-y-1">
+          <h1 className="font-serif text-3xl text-foreground tracking-tight">Host Dashboard</h1>
+          <p className="font-sans text-sm text-muted-foreground">Manage your wedding matching experience</p>
         </div>
 
         {/* Processing Payment Overlay */}
         {isProcessingPayment && (
-          <Card className="bg-white border-border/50 shadow-card">
-            <CardContent className="p-8 text-center">
-              <div className="w-12 h-12 mx-auto border border-foreground border-t-transparent rounded-full animate-spin mb-4" />
-              <h3 className="text-lg text-foreground mb-2">Verifying Payment...</h3>
-              <p className="text-muted-foreground text-sm">Please wait while we confirm your payment</p>
-            </CardContent>
-          </Card>
+          <div className="card-modern p-8 text-center">
+            <div className="w-12 h-12 mx-auto border-2 border-foreground/20 border-t-foreground rounded-full animate-spin mb-4" />
+            <h3 className="font-serif text-lg text-foreground mb-2">Verifying Payment...</h3>
+            <p className="font-sans text-muted-foreground text-sm">Please wait while we confirm your payment</p>
+          </div>
         )}
 
         {/* Payment Success Message */}
         {paymentSuccess && !event && (
-          <Card className="bg-green-50 border-green-200">
-            <CardContent className="p-6 flex items-center gap-4">
-              <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                <Check className="w-6 h-6 text-green-600" />
-              </div>
-              <div>
-                <h3 className="text-lg text-green-800 font-medium">Payment Successful!</h3>
-                <p className="text-green-700 text-sm">You can now create your wedding event below.</p>
-              </div>
-            </CardContent>
-          </Card>
+          <div className="card-modern p-6 flex items-center gap-4 border-green-200 bg-green-50/50">
+            <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+              <Check className="w-6 h-6 text-green-600" />
+            </div>
+            <div>
+              <h3 className="font-serif text-lg text-green-800">Payment Successful!</h3>
+              <p className="font-sans text-green-700 text-sm">You can now create your wedding event below.</p>
+            </div>
+          </div>
         )}
 
         {event ? (
           <>
             {/* Event Info Card */}
-            <Card className="bg-white border-border/50 shadow-card">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-2xl text-foreground tracking-tight">
-                  {event.bride_name} & {event.groom_name}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="flex flex-wrap gap-6 text-sm text-muted-foreground">
-                  {event.wedding_date && (
-                    <div className="flex items-center gap-2">
-                      <Calendar className="w-4 h-4" />
-                      {format(new Date(event.wedding_date), 'MMMM d, yyyy')}
-                    </div>
-                  )}
-                  {event.venue && (
-                    <div className="flex items-center gap-2">
-                      <MapPin className="w-4 h-4" />
-                      {event.venue}
-                    </div>
-                  )}
-                </div>
-
-                {/* Event Code */}
-                <div className="bg-muted/20 p-6">
-                  <p className="text-xs text-muted-foreground tracking-wide uppercase mb-3">Event Code</p>
-                  <div className="flex items-center gap-4">
-                    <div className="bg-white px-8 py-4 text-3xl tracking-[0.4em] text-foreground border border-border/50 font-mono">
-                      {event.code}
-                    </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={copyEventCode}
-                      className="border-border rounded-none"
-                      data-testid="copy-code-btn"
-                    >
-                      <Copy className="w-4 h-4 mr-2" />
-                      Copy
-                    </Button>
+            <div className="card-modern p-6 space-y-6">
+              <h2 className="font-serif text-2xl text-foreground tracking-tight">
+                {event.bride_name} & {event.groom_name}
+              </h2>
+              <div className="flex flex-wrap gap-6 font-sans text-sm text-muted-foreground">
+                {event.wedding_date && (
+                  <div className="flex items-center gap-2">
+                    <Calendar className="w-4 h-4" />
+                    {format(new Date(event.wedding_date), 'MMMM d, yyyy')}
                   </div>
+                )}
+                {event.venue && (
+                  <div className="flex items-center gap-2">
+                    <MapPin className="w-4 h-4" />
+                    {event.venue}
+                  </div>
+                )}
+              </div>
+
+              {/* Event Code */}
+              <div className="bg-muted/30 p-6 rounded-xl">
+                <p className="font-sans text-xs text-muted-foreground tracking-[0.15em] uppercase mb-3">Event Code</p>
+                <div className="flex items-center gap-4">
+                  <div className="bg-white px-8 py-4 text-3xl tracking-[0.4em] text-foreground border border-border/30 font-mono rounded-xl">
+                    {event.code}
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={copyEventCode}
+                    className="rounded-full font-sans btn-pill"
+                    data-testid="copy-code-btn"
+                  >
+                    <Copy className="w-4 h-4 mr-2" />
+                    Copy
+                  </Button>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
 
             {/* Stats Grid */}
             <div className="grid grid-cols-2 gap-4">
-              <Card className="bg-white border-border/50 shadow-card">
-                <CardContent className="p-6 text-center">
-                  <div className="w-12 h-12 mx-auto border border-border flex items-center justify-center mb-4">
-                    <Users className="w-5 h-5 text-foreground/70" />
-                  </div>
-                  <p className="text-4xl text-foreground tracking-tight">{stats.guests}</p>
-                  <p className="text-xs text-muted-foreground tracking-wide uppercase mt-1">Single Guests</p>
-                </CardContent>
-              </Card>
+              <div className="card-modern p-6 text-center">
+                <div className="w-12 h-12 mx-auto bg-muted rounded-full flex items-center justify-center mb-4">
+                  <Users className="w-5 h-5 text-foreground/70" />
+                </div>
+                <p className="font-serif text-4xl text-foreground tracking-tight">{stats.guests}</p>
+                <p className="font-sans text-xs text-muted-foreground tracking-wide uppercase mt-1">Single Guests</p>
+              </div>
               
-              <Card className="bg-white border-border/50 shadow-card">
-                <CardContent className="p-6 text-center">
-                  <div className="w-12 h-12 mx-auto border border-border flex items-center justify-center mb-4">
-                    <svg className="w-5 h-5 text-foreground/70" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-                    </svg>
-                  </div>
-                  <p className="text-4xl text-foreground tracking-tight">{stats.matches}</p>
-                  <p className="text-xs text-muted-foreground tracking-wide uppercase mt-1">Matches Made</p>
-                </CardContent>
-              </Card>
+              <div className="card-modern p-6 text-center">
+                <div className="w-12 h-12 mx-auto bg-muted rounded-full flex items-center justify-center mb-4">
+                  <svg className="w-5 h-5 text-foreground/70" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                  </svg>
+                </div>
+                <p className="font-serif text-4xl text-foreground tracking-tight">{stats.matches}</p>
+                <p className="font-sans text-xs text-muted-foreground tracking-wide uppercase mt-1">Matches Made</p>
+              </div>
             </div>
 
             {/* Tips */}
-            <Card className="bg-muted/10 border-border/30">
-              <CardContent className="p-6">
-                <h3 className="text-lg text-foreground mb-4 tracking-tight">How to Use</h3>
-                <ul className="text-sm text-muted-foreground space-y-2">
-                  <li>• Share the event code on your wedding invitations</li>
-                  <li>• Encourage guests to complete their profiles before the event</li>
-                  <li>• Announce the app during the reception</li>
-                </ul>
-              </CardContent>
-            </Card>
+            <div className="card-modern p-6 bg-muted/20">
+              <h3 className="font-serif text-lg text-foreground mb-4 tracking-tight">How to Use</h3>
+              <ul className="font-sans text-sm text-muted-foreground space-y-3">
+                <li className="flex items-start gap-3">
+                  <span className="w-5 h-5 bg-foreground text-white rounded-full flex items-center justify-center text-xs flex-shrink-0 mt-0.5">1</span>
+                  Share the event code on your wedding invitations
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="w-5 h-5 bg-foreground text-white rounded-full flex items-center justify-center text-xs flex-shrink-0 mt-0.5">2</span>
+                  Encourage guests to complete their profiles before the event
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="w-5 h-5 bg-foreground text-white rounded-full flex items-center justify-center text-xs flex-shrink-0 mt-0.5">3</span>
+                  Announce the app during the reception
+                </li>
+              </ul>
+            </div>
           </>
         ) : !isProcessingPayment && (
           /* No Event - Payment or Create */
-          <div className="text-center py-16">
-            <div className="w-16 h-16 mx-auto border border-border flex items-center justify-center mb-8">
+          <div className="text-center py-12">
+            <div className="w-16 h-16 mx-auto bg-muted rounded-full flex items-center justify-center mb-8">
               <svg className="w-8 h-8 text-foreground/30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                 <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
               </svg>
             </div>
-            <h2 className="text-2xl text-foreground mb-2 tracking-tight">Create your Wedding</h2>
-            <p className="text-muted-foreground mb-8">Where you become the matchmaker</p>
+            <h2 className="font-serif text-2xl text-foreground mb-2 tracking-tight">Create your Wedding</h2>
+            <p className="font-sans text-sm text-muted-foreground mb-8">Where you become the matchmaker</p>
             
             {!hasPaid ? (
               /* Payment Required */
               <div className="space-y-4">
-                <Card className="bg-white border-border/50 shadow-card max-w-sm mx-auto">
-                  <CardContent className="p-6">
-                    <div className="text-center mb-4">
-                      <p className="text-4xl text-foreground tracking-tight">${eventPrice}</p>
-                      <p className="text-sm text-muted-foreground">One-time payment</p>
-                    </div>
-                    <ul className="text-sm text-muted-foreground space-y-2 text-left mb-6">
-                      <li className="flex items-center gap-2">
-                        <Check className="w-4 h-4 text-green-600" />
-                        Unique event code
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <Check className="w-4 h-4 text-green-600" />
-                        Unlimited guests
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <Check className="w-4 h-4 text-green-600" />
-                        AI conversation starters
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <Check className="w-4 h-4 text-green-600" />
-                        Match analytics
-                      </li>
-                    </ul>
-                    <Button 
-                      onClick={handlePayment}
-                      disabled={isProcessingPayment}
-                      className="w-full bg-foreground hover:bg-foreground/90 rounded-none h-12"
-                      data-testid="pay-btn"
-                    >
-                      {isProcessingPayment ? (
-                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                      ) : (
-                        <>
-                          <CreditCard className="w-4 h-4 mr-2" />
-                          Pay ${eventPrice}
-                        </>
-                      )}
-                    </Button>
-                  </CardContent>
-                </Card>
+                <div className="card-modern max-w-sm mx-auto p-6">
+                  <div className="text-center mb-6">
+                    <p className="font-serif text-4xl text-foreground tracking-tight">${eventPrice}</p>
+                    <p className="font-sans text-sm text-muted-foreground mt-1">One-time payment</p>
+                  </div>
+                  <ul className="font-sans text-sm text-muted-foreground space-y-3 text-left mb-6">
+                    <li className="flex items-center gap-3">
+                      <Check className="w-4 h-4 text-foreground flex-shrink-0" />
+                      Unique event code
+                    </li>
+                    <li className="flex items-center gap-3">
+                      <Check className="w-4 h-4 text-foreground flex-shrink-0" />
+                      Unlimited guests
+                    </li>
+                    <li className="flex items-center gap-3">
+                      <Check className="w-4 h-4 text-foreground flex-shrink-0" />
+                      AI conversation starters
+                    </li>
+                    <li className="flex items-center gap-3">
+                      <Check className="w-4 h-4 text-foreground flex-shrink-0" />
+                      Match analytics
+                    </li>
+                  </ul>
+                  <Button 
+                    onClick={handlePayment}
+                    disabled={isProcessingPayment}
+                    className="w-full bg-foreground hover:bg-foreground/90 rounded-full h-12 btn-pill"
+                    data-testid="pay-btn"
+                  >
+                    {isProcessingPayment ? (
+                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                      <>
+                        <CreditCard className="w-4 h-4 mr-2" />
+                        Pay ${eventPrice}
+                      </>
+                    )}
+                  </Button>
+                  {isProcessingPayment && (
+                    <p className="font-sans text-xs text-muted-foreground mt-4 text-center">
+                      A payment window has opened. Complete payment there, then return here.
+                      <button 
+                        onClick={() => { setIsProcessingPayment(false); checkPaymentStatus(); }} 
+                        className="block mx-auto mt-2 underline hover:text-foreground"
+                        data-testid="verify-payment-btn"
+                      >
+                        I've completed payment
+                      </button>
+                    </p>
+                  )}
+                </div>
               </div>
             ) : (
               /* Can Create Event */
               <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
                 <DialogTrigger asChild>
-                  <Button className="bg-foreground hover:bg-foreground/90 rounded-none" data-testid="create-event-btn">
+                  <Button className="bg-foreground hover:bg-foreground/90 rounded-full btn-pill h-12 px-8" data-testid="create-event-btn">
                     <Plus className="w-4 h-4 mr-2" />
                     Create Event
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="bg-white border-border">
+                <DialogContent className="bg-white border-border/30 rounded-2xl">
                   <DialogHeader>
-                    <DialogTitle className="text-2xl text-foreground tracking-tight">
+                    <DialogTitle className="font-serif text-2xl text-foreground tracking-tight">
                       Wedding Details
                     </DialogTitle>
                   </DialogHeader>
                   <form onSubmit={handleCreateEvent} className="space-y-6 pt-4">
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label className="text-foreground text-sm tracking-wide">Bride's Name *</Label>
+                        <Label className="font-sans text-foreground text-sm tracking-wide">Bride's Name *</Label>
                         <Input
                           value={eventForm.bride_name}
                           onChange={(e) => setEventForm({ ...eventForm, bride_name: e.target.value })}
                           placeholder="Sarah"
-                          className="bg-white border-border/50 rounded-none placeholder:text-xs"
+                          className="bg-white border-border/30 rounded-xl font-sans placeholder:text-xs"
                           required
                           data-testid="bride-name-input"
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label className="text-foreground text-sm tracking-wide">Groom's Name *</Label>
+                        <Label className="font-sans text-foreground text-sm tracking-wide">Groom's Name *</Label>
                         <Input
                           value={eventForm.groom_name}
                           onChange={(e) => setEventForm({ ...eventForm, groom_name: e.target.value })}
                           placeholder="Michael"
-                          className="bg-white border-border/50 rounded-none placeholder:text-xs"
+                          className="bg-white border-border/30 rounded-xl font-sans placeholder:text-xs"
                           required
                           data-testid="groom-name-input"
                         />
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <Label className="text-foreground text-sm tracking-wide">Wedding Date *</Label>
+                      <Label className="font-sans text-foreground text-sm tracking-wide">Wedding Date *</Label>
                       <Input
                         type="date"
                         value={eventForm.wedding_date}
                         onChange={(e) => setEventForm({ ...eventForm, wedding_date: e.target.value })}
-                        className="bg-white border-border/50 rounded-none"
+                        className="bg-white border-border/30 rounded-xl font-sans"
                         required
                         data-testid="wedding-date-input"
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label className="text-foreground text-sm tracking-wide">Venue (Optional)</Label>
+                      <Label className="font-sans text-foreground text-sm tracking-wide">Venue (Optional)</Label>
                       <Input
                         value={eventForm.venue}
                         onChange={(e) => setEventForm({ ...eventForm, venue: e.target.value })}
                         placeholder="The Grand Ballroom"
-                        className="bg-white border-border/50 rounded-none placeholder:text-xs"
+                        className="bg-white border-border/30 rounded-xl font-sans placeholder:text-xs"
                         data-testid="venue-input"
                       />
                     </div>
                     <Button 
                       type="submit" 
                       disabled={isCreating}
-                      className="w-full bg-foreground hover:bg-foreground/90 h-12 rounded-none"
+                      className="w-full bg-foreground hover:bg-foreground/90 h-12 rounded-full btn-pill"
                       data-testid="submit-event-btn"
                     >
                       {isCreating ? (
